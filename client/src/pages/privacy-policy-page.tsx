@@ -24,7 +24,7 @@ export default function PrivacyPolicyPage() {
       <Card className="mb-8">
         <CardHeader className="pb-3">
           <CardTitle className="text-2xl md:text-3xl font-bold text-center">Privacy Policy</CardTitle>
-          <p className="text-center text-muted-foreground mt-2">Last Updated: March 23, 2025</p>
+          <p className="text-center text-muted-foreground mt-2">Last Updated: June 7, 2025</p>
         </CardHeader>
         
         <CardContent className="prose dark:prose-invert max-w-none">

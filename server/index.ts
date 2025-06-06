@@ -8,12 +8,14 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 // Add CORS middleware for cross-origin requests
-app.use(cors({
-  origin: true, // Allow requests from any origin in development
-  credentials: true, // Allow cookies to be sent cross-origin
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+app.use(
+  cors({
+    origin: true, // Allow requests from any origin in development
+    credentials: true, // Allow cookies to be sent cross-origin
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 
 app.use((req, res, next) => {
   const start = Date.now();
@@ -69,11 +71,7 @@ app.use((req, res, next) => {
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
   const port = 5000;
-  server.listen({
-    port,
-    host: "0.0.0.0",
-    reusePort: true,
-  }, () => {
+  server.listen(port, () => {
     log(`serving on port ${port}`);
   });
 })();

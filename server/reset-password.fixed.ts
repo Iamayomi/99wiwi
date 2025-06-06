@@ -1,4 +1,6 @@
 import { Request, Response, Express } from 'express';
+import dotenv from "dotenv";
+dotenv.config();
 import { storage } from './storage';
 import { randomBytes, scrypt } from 'crypto';
 import { promisify } from 'util';

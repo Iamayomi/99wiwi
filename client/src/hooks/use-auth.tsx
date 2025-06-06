@@ -77,7 +77,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       toast({
         title: "Registration successful",
-        description: `Welcome to Crypto Casino, ${data.user.username}!`,
+        description: `Welcome to 99wiwi Casino, ${data.user.username}!`,
       });
     },
     onError: (error: Error) => {
