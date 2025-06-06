@@ -7,6 +7,7 @@ import { BanNotification } from "@/components/ban-notification";
 import { HelmetProvider } from 'react-helmet-async';
 import NotFound from "@/pages/not-found";
 import HomePage from "@/pages/home-page";
+import Home from "@/pages/home";
 import AuthPage from "@/pages/auth-page";
 import SlotsPage from "@/pages/slots-page";
 import DicePage from "@/pages/dice-page";
@@ -26,6 +27,7 @@ import ForgotPasswordPage from "@/pages/forgot-password-page";
 import ResetPasswordPage from "@/pages/reset-password-page";
 import { ProtectedRoute } from "./lib/protected-route";
 
+
 function Router() {
   return (
     <Switch>
@@ -42,6 +44,7 @@ function Router() {
       <ProtectedRoute path="/subscriptions" component={SubscriptionPage} />
       <ProtectedRoute path="/support" component={SupportPage} />
       <ProtectedRoute path="/admin" component={AdminPage} />
+      <Route  path="/home" component={Home} />
       <Route path="/auth" component={AuthPage} />
       <Route path="/forgot-password" component={ForgotPasswordPage} />
       <Route path="/reset-password" component={ResetPasswordPage} />
