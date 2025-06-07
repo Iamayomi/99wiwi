@@ -18,7 +18,7 @@ const home = () => {
         <Mainpage />
         {/* <Rightside /> */}
       </section>
-      <div className="md:p-10 md:m-10">
+      <div className="md:p-10 top-0 md:m-10">
         <GamingUI />
       </div>
 
