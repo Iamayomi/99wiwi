@@ -34,6 +34,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { FaHome } from 'react-icons/fa';
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -96,7 +97,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
   
   // Show a shortened navigation on mobile
   const mobilePrimaryNav = [
-    { href: '/', icon: <Home size={18} />, label: 'Home' },
+    { href: '/', icon: <FaHome size={18} />, label: 'Home' },
     { href: '/purchase', icon: <Coins size={18} />, label: 'Buy' },
     { href: '/rewards', icon: <Gift size={18} />, label: 'Rewards' },
   ];
