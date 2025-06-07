@@ -8,7 +8,6 @@ import Glowcard from "./_component/glowcard";
 import IMAGES from "../../../images";
 import axios from "axios";
 
-
 const featuredGames = [
   {
     name: "Rock, Paper",

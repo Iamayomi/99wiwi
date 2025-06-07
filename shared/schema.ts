@@ -1,4 +1,12 @@
-import { pgTable, text, serial, integer, boolean, timestamp, decimal } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  text,
+  serial,
+  integer,
+  boolean,
+  timestamp,
+  decimal,
+} from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -7,7 +15,9 @@ export const users = pgTable("users", {
   username: text("username").notNull().unique(),
   email: text("email").notNull(),
   password: text("password").notNull(),
-  balance: decimal("balance", { precision: 10, scale: 2 }).default("10000").notNull(),
+  balance: decimal("balance", { precision: 10, scale: 2 })
+    .default("10000")
+    .notNull(),
   playCount: integer("play_count").default(0).notNull(),
   isAdmin: boolean("is_admin").default(false).notNull(),
   isOwner: boolean("is_owner").default(false).notNull(),
@@ -104,7 +114,9 @@ export const insertTransactionSchema = createInsertSchema(transactions).omit({
   timestamp: true,
 });
 
-export const insertCoinTransactionSchema = createInsertSchema(coinTransactions).omit({
+export const insertCoinTransactionSchema = createInsertSchema(
+  coinTransactions
+).omit({
   id: true,
   timestamp: true,
 });
@@ -138,12 +150,16 @@ export const adminBanUserSchema = z.object({
 });
 
 export const banAppealSchema = z.object({
-  reason: z.string().min(10).max(1000).describe("Explain why your ban should be lifted"),
+  reason: z
+    .string()
+    .min(10)
+    .max(1000)
+    .describe("Explain why your ban should be lifted"),
 });
 
 export const adminBanAppealResponseSchema = z.object({
   appealId: z.number(),
-  status: z.enum(['approved', 'rejected']),
+  status: z.enum(["approved", "rejected"]),
   response: z.string().min(3).max(500),
 });
 
@@ -158,18 +174,23 @@ export const adminMassBonusSchema = z.object({
   amount: z.number().positive().min(1).max(10000),
   reason: z.string().min(3).max(200),
   message: z.string().min(3).max(200),
-  targetType: z.enum(['all', 'new', 'active', 'veteran', 'custom']).optional().default('all'),
-  filters: z.object({
-    minPlayCount: z.number().int().min(0).optional(),
-    maxPlayCount: z.number().int().min(0).optional(),
-  }).optional(),
+  targetType: z
+    .enum(["all", "new", "active", "veteran", "custom"])
+    .optional()
+    .default("all"),
+  filters: z
+    .object({
+      minPlayCount: z.number().int().min(0).optional(),
+      maxPlayCount: z.number().int().min(0).optional(),
+    })
+    .optional(),
 });
 
 // Schema for system announcements
 export const adminAnnouncementSchema = z.object({
   title: z.string().min(3).max(100),
   message: z.string().min(3).max(500),
-  type: z.enum(['info', 'warning', 'success', 'error']),
+  type: z.enum(["info", "warning", "success", "error"]),
   duration: z.number().int().min(5).max(3600).default(30), // Display duration in seconds
   isPinned: z.boolean().default(false), // Whether to pin the announcement
   targetUserIds: z.array(z.number()).optional(), // Optional array of user IDs to target with this announcement
@@ -177,16 +198,23 @@ export const adminAnnouncementSchema = z.object({
 
 // Schema for game configuration updates
 export const adminGameConfigSchema = z.object({
-  gameType: z.enum(['slots', 'dice', 'crash', 'roulette', 'blackjack', 'plinko']),
+  gameType: z.enum([
+    "slots",
+    "dice",
+    "crash",
+    "roulette",
+    "blackjack",
+    "plinko",
+  ]),
   config: z.record(z.any()), // Game-specific configuration as key-value pairs
 });
 
 // Schema for admin assigning subscription to user
 export const adminAssignSubscriptionSchema = z.object({
   userId: z.number(),
-  tier: z.enum(['bronze', 'silver', 'gold']),
+  tier: z.enum(["bronze", "silver", "gold"]),
   durationMonths: z.number().min(1).max(12),
-  reason: z.string().min(3).max(100)
+  reason: z.string().min(3).max(100),
 });
 
 // Schema for coin purchase packages
@@ -207,7 +235,7 @@ export const createPaymentIntentSchema = z.object({
 // Schema for subscription plans
 export const subscriptionPlanSchema = z.object({
   id: z.string(),
-  tier: z.enum(['bronze', 'silver', 'gold']),
+  tier: z.enum(["bronze", "silver", "gold"]),
   name: z.string(),
   price: z.number().positive(),
   priceId: z.string(), // Stripe price ID
@@ -219,7 +247,7 @@ export const subscriptionPlanSchema = z.object({
 
 // Schema for creating/updating a subscription
 export const manageSubscriptionSchema = z.object({
-  tier: z.enum(['bronze', 'silver', 'gold']),
+  tier: z.enum(["bronze", "silver", "gold"]),
 });
 
 export const insertBanAppealSchema = createInsertSchema(banAppeals).omit({
@@ -240,14 +268,18 @@ export type CoinTransaction = typeof coinTransactions.$inferSelect;
 export type AdminUserUpdate = z.infer<typeof adminUserUpdateSchema>;
 export type AdminBanUser = z.infer<typeof adminBanUserSchema>;
 export type BanAppeal = z.infer<typeof banAppealSchema>;
-export type AdminBanAppealResponse = z.infer<typeof adminBanAppealResponseSchema>;
+export type AdminBanAppealResponse = z.infer<
+  typeof adminBanAppealResponseSchema
+>;
 export type InsertBanAppeal = z.infer<typeof insertBanAppealSchema>;
 export type BanAppealType = typeof banAppeals.$inferSelect;
 export type AdminCoinAdjustment = z.infer<typeof adminCoinAdjustmentSchema>;
 export type AdminMassBonus = z.infer<typeof adminMassBonusSchema>;
 export type AdminAnnouncement = z.infer<typeof adminAnnouncementSchema>;
 export type AdminGameConfig = z.infer<typeof adminGameConfigSchema>;
-export type AdminAssignSubscription = z.infer<typeof adminAssignSubscriptionSchema>;
+export type AdminAssignSubscription = z.infer<
+  typeof adminAssignSubscriptionSchema
+>;
 export type InsertPayment = z.infer<typeof insertPaymentSchema>;
 export type Payment = typeof payments.$inferSelect;
 export type InsertLoginReward = z.infer<typeof insertLoginRewardSchema>;
@@ -277,7 +309,7 @@ export const diceRollSchema = z.object({
   result: z.number().int().min(1).max(100),
   multiplier: z.number(),
   payout: z.number(),
-  isWin: z.boolean()
+  isWin: z.boolean(),
 });
 
 export const crashGameSchema = z.object({
@@ -285,21 +317,21 @@ export const crashGameSchema = z.object({
   cashoutPoint: z.number().optional(),
   multiplier: z.number(),
   payout: z.number(),
-  isWin: z.boolean()
+  isWin: z.boolean(),
 });
 
 export const plinkoPinSchema = z.object({
   row: z.number(),
-  position: z.number()
+  position: z.number(),
 });
 
 export const plinkoPathSchema = z.object({
-  row: z.number(), 
-  position: z.number()
+  row: z.number(),
+  position: z.number(),
 });
 
 export const plinkoGameSchema = z.object({
-  risk: z.enum(['low', 'medium', 'high']),
+  risk: z.enum(["low", "medium", "high"]),
   rows: z.number().int().min(8).max(16),
   pins: z.array(z.array(plinkoPinSchema)).optional(),
   path: z.array(plinkoPathSchema),
@@ -312,19 +344,19 @@ export const plinkoGameSchema = z.object({
 
 // Roulette bet types
 export const rouletteBetTypeSchema = z.enum([
-  'straight', // Single number (35:1)
-  'split', // Two numbers (17:1)
-  'street', // Three numbers (11:1)
-  'corner', // Four numbers (8:1)
-  'line', // Six numbers (5:1)
-  'dozen', // 12 numbers (2:1) - first, second, or third dozen
-  'column', // 12 numbers (2:1) - 1st, 2nd, or 3rd column
-  'even', // Even numbers (1:1)
-  'odd', // Odd numbers (1:1)
-  'red', // Red numbers (1:1)
-  'black', // Black numbers (1:1)
-  'low', // 1-18 (1:1)
-  'high', // 19-36 (1:1)
+  "straight", // Single number (35:1)
+  "split", // Two numbers (17:1)
+  "street", // Three numbers (11:1)
+  "corner", // Four numbers (8:1)
+  "line", // Six numbers (5:1)
+  "dozen", // 12 numbers (2:1) - first, second, or third dozen
+  "column", // 12 numbers (2:1) - 1st, 2nd, or 3rd column
+  "even", // Even numbers (1:1)
+  "odd", // Odd numbers (1:1)
+  "red", // Red numbers (1:1)
+  "black", // Black numbers (1:1)
+  "low", // 1-18 (1:1)
+  "high", // 19-36 (1:1)
 ]);
 
 export const singleBetSchema = z.object({
@@ -339,27 +371,41 @@ export const rouletteBetSchema = z.object({
 
 export const rouletteResultSchema = z.object({
   spin: z.number().int().min(0).max(36), // The number that the ball landed on
-  color: z.enum(['red', 'black', 'green']), // Color of the pocket
+  color: z.enum(["red", "black", "green"]), // Color of the pocket
   multiplier: z.number(),
   payout: z.number(),
   isWin: z.boolean(),
-  metadata: z.string().optional() // For storing additional data
+  metadata: z.string().optional(), // For storing additional data
 });
 
 // Blackjack schemas
 export const cardSchema = z.object({
-  suit: z.enum(['hearts', 'diamonds', 'clubs', 'spades']),
-  value: z.enum(['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']),
+  suit: z.enum(["hearts", "diamonds", "clubs", "spades"]),
+  value: z.enum([
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "10",
+    "J",
+    "Q",
+    "K",
+    "A",
+  ]),
   hidden: z.boolean().optional(),
 });
 
 export const blackjackActionSchema = z.enum([
-  'hit',
-  'stand',
-  'double',
-  'split',
-  'surrender',
-  'insurance'
+  "hit",
+  "stand",
+  "double",
+  "split",
+  "surrender",
+  "insurance",
 ]);
 
 export const blackjackHandSchema = z.object({
@@ -376,10 +422,10 @@ export const blackjackStateSchema = z.object({
   playerHands: z.array(blackjackHandSchema),
   dealerHand: blackjackHandSchema,
   currentHandIndex: z.number().int().min(0).optional(),
-  status: z.enum(['betting', 'player-turn', 'dealer-turn', 'complete']),
+  status: z.enum(["betting", "player-turn", "dealer-turn", "complete"]),
   insurance: z.number().optional(),
   allowedActions: z.array(blackjackActionSchema).optional(),
-  result: z.enum(['win', 'lose', 'push', 'blackjack', 'surrender']).optional(),
+  result: z.enum(["win", "lose", "push", "blackjack", "surrender"]).optional(),
   payout: z.number().optional(),
   isComplete: z.boolean().optional(),
 });
@@ -392,25 +438,25 @@ export const blackjackBetSchema = z.object({
 
 // Poker schemas
 export const pokerHandTypeSchema = z.enum([
-  'high-card',
-  'pair',
-  'two-pair',
-  'three-of-a-kind',
-  'straight',
-  'flush',
-  'full-house',
-  'four-of-a-kind',
-  'straight-flush',
-  'royal-flush'
+  "high-card",
+  "pair",
+  "two-pair",
+  "three-of-a-kind",
+  "straight",
+  "flush",
+  "full-house",
+  "four-of-a-kind",
+  "straight-flush",
+  "royal-flush",
 ]);
 
 export const pokerActionSchema = z.enum([
-  'check',
-  'bet',
-  'call',
-  'raise',
-  'fold',
-  'all-in'
+  "check",
+  "bet",
+  "call",
+  "raise",
+  "fold",
+  "all-in",
 ]);
 
 export const pokerPlayerSchema = z.object({
@@ -432,12 +478,17 @@ export const pokerGameStateSchema = z.object({
   currentBet: z.number().int().min(0),
   currentPlayer: z.number().int().min(0).optional(),
   dealerPosition: z.number().int().min(0),
-  stage: z.enum(['pre-flop', 'flop', 'turn', 'river', 'showdown']),
-  results: z.record(z.string(), z.object({
-    handType: pokerHandTypeSchema,
-    bestHand: z.array(cardSchema),
-    winAmount: z.number().optional()
-  })).optional(),
+  stage: z.enum(["pre-flop", "flop", "turn", "river", "showdown"]),
+  results: z
+    .record(
+      z.string(),
+      z.object({
+        handType: pokerHandTypeSchema,
+        bestHand: z.array(cardSchema),
+        winAmount: z.number().optional(),
+      })
+    )
+    .optional(),
 });
 
 export type SlotsPayout = z.infer<typeof slotsPayoutSchema>;
@@ -480,13 +531,17 @@ export const ticketMessages = pgTable("ticket_messages", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-export const insertSupportTicketSchema = createInsertSchema(supportTickets).omit({
+export const insertSupportTicketSchema = createInsertSchema(
+  supportTickets
+).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
 });
 
-export const insertTicketMessageSchema = createInsertSchema(ticketMessages).omit({
+export const insertTicketMessageSchema = createInsertSchema(
+  ticketMessages
+).omit({
   id: true,
   createdAt: true,
 });
@@ -506,21 +561,27 @@ export const passwordResetTokens = pgTable("password_reset_tokens", {
   isUsed: boolean("is_used").default(false).notNull(),
 });
 
-export const insertPasswordResetTokenSchema = createInsertSchema(passwordResetTokens).omit({
+export const insertPasswordResetTokenSchema = createInsertSchema(
+  passwordResetTokens
+).omit({
   id: true,
   createdAt: true,
 });
 
-export const passwordResetSchema = z.object({
-  token: z.string().min(1),
-  password: z.string().min(6),
-  confirmPassword: z.string().min(6),
-}).refine(data => data.password === data.confirmPassword, {
-  message: "Passwords do not match",
-  path: ["confirmPassword"],
-});
+export const passwordResetSchema = z
+  .object({
+    token: z.string().min(1),
+    password: z.string().min(6),
+    confirmPassword: z.string().min(6),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
 
-export type InsertPasswordResetToken = z.infer<typeof insertPasswordResetTokenSchema>;
+export type InsertPasswordResetToken = z.infer<
+  typeof insertPasswordResetTokenSchema
+>;
 export type PasswordResetToken = typeof passwordResetTokens.$inferSelect;
 export type PasswordReset = z.infer<typeof passwordResetSchema>;
 

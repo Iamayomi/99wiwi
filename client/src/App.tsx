@@ -31,7 +31,7 @@ import { ProtectedRoute } from "./lib/protected-route";
 function Router() {
   return (
     <Switch>
-      <ProtectedRoute path="/home" component={HomePage} />
+      <ProtectedRoute path="/" component={HomePage} />
       <ProtectedRoute path="/slots" component={SlotsPage} />
       <ProtectedRoute path="/dice" component={DicePage} />
       <ProtectedRoute path="/crash" component={CrashPage} />
@@ -44,7 +44,7 @@ function Router() {
       <ProtectedRoute path="/subscriptions" component={SubscriptionPage} />
       <ProtectedRoute path="/support" component={SupportPage} />
       <ProtectedRoute path="/admin" component={AdminPage} />
-      <Route  path="/" component={Home} />
+      {/* <Route  path="/" component={Home} /> */}
       <Route path="/auth" component={AuthPage} />
       <Route path="/forgot-password" component={ForgotPasswordPage} />
       <Route path="/reset-password" component={ResetPasswordPage} />
