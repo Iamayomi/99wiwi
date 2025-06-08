@@ -6,8 +6,8 @@ import GameCard from "./_component/gameCard";
 import LiveCard from "./_component/liveGameCard";
 import Glowcard from "./_component/glowcard";
 import IMAGES from "../../../images";
-import axios from "axios";
 
+import * as Toast from "@radix-ui/react-toast";
 
 const featuredGames = [
   {
@@ -114,21 +114,6 @@ const GamingUI = () => {
   const [games, setGames] = useState([]);
   const [search, setSearch] = useState("");
   const [, setLocation] = useLocation();
-
-  useEffect(() => {
-    const fetchGames = async () => {
-      try {
-        const response = await axios.get(
-          "https://ggwiwigamesbe.onrender.com/admin/games"
-        );
-        setGames(response.data);
-      } catch (error) {
-        console.error("Error fetching games:", error);
-      }
-    };
-
-    fetchGames();
-  }, []);
 
   // Filter games by category & search text
   const filteredGames =
@@ -240,6 +225,10 @@ const GamingUI = () => {
           <a
             key={game.name}
             href={`/${game.name.toLowerCase().replace(/\s+/g, "_")}`}
+            onClick={(e) => {
+              e.preventDefault();
+              alert("please login");
+            }}
           >
             <GameCard {...game} />
           </a>
