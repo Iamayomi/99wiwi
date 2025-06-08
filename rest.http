@@ -1,5 +1,5 @@
 #### SEND REQUEST TO GETS A PROFILE
-GET http://localhost:8080/api/v1/users/profile
+GET http://localhost:5000/api/v1/users/profile
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im5vdEBnbWFpbC5jb20iLCJ1c2VySWQiOjEsImlhdCI6MTczNTM4NzQ4MSwiZXhwIjoxNzM1NDczODgxfQ.6SlVtKAGykfS-zTqfYsOh2MdoV5wzalaNHbBNx1p38c
 
 #### LOGIN A USER

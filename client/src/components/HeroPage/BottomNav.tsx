@@ -42,7 +42,7 @@ const BottomNav = () => {
     },
   ];
 
-  const renderDropdown = (type) => {
+  const renderDropdown = (type: any) => {
     if (type === "casino" && casinoOpen) {
       return (
         <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 bg-white shadow-lg rounded-t-lg py-3 px-4 z-50">
@@ -59,10 +59,7 @@ const BottomNav = () => {
               <BiDice5 className="text-xl" />
               <span className="text-sm">Fast Games</span>
             </li>
-            <button
-              onClick={() => setCasinoOpen(false)}
-              className="text-gray-500 hover:text-gray-800"
-            >
+            <button onClick={() => setCasinoOpen(false)} className="text-gray-500 hover:text-gray-800">
               <CgClose className="text-2xl" />
             </button>
           </ul>
@@ -73,16 +70,14 @@ const BottomNav = () => {
   };
 
   return (
-    <div className="fixed lg:hidden z-[1000] bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-md py-2 px-4 flex justify-around items-end">
+    <div className="fixed lg:hidden z-[1000] bottom-0 left-0 right-0 bg-background border-t border-gray-800 shadow-md py-2 px-4 flex justify-around items-end">
       {navItems.map((item) => {
         if (item.hidden) return null;
 
         return (
           <a href={item.href} key={item.id} className="relative">
             <button
-              className={`flex flex-col items-center px-2 py-1 transition-all ${
-                activeTab === item.id ? "text-yellow-400" : "text-gray-500"
-              }`}
+              className={`flex flex-col items-center px-2 py-1 transition-all ${activeTab === item.id ? "text-yellow-400" : "text-gray-500"}`}
               onClick={(e) => {
                 e.preventDefault(); // prevent navigation when toggling dropdown
                 setActiveTab(item.id);
@@ -92,8 +87,7 @@ const BottomNav = () => {
                   setCasinoOpen(false);
                   setSportsOpen(false);
                 }
-              }}
-            >
+              }}>
               <div className="text-[16px]">{item.icon}</div>
               <span className="text-[12px] mt-1">{item.label}</span>
             </button>
