@@ -10,8 +10,7 @@ import { User as SelectUser } from "@shared/schema";
 import jwt from "jsonwebtoken";
 
 // Use a simple JWT token auth instead of sessions
-const JWT_SECRET =
-  process.env.JWT_SECRET || "crypto-casino-super-secure-jwt-secret";
+const JWT_SECRET = process.env.JWT_SECRET || "crypto-casino-super-secure-jwt-secret";
 const TOKEN_EXPIRY = "24h";
 
 const scryptAsync = promisify(scrypt);
@@ -30,11 +29,7 @@ async function comparePasswords(supplied: string, stored: string) {
 }
 
 // Extract user from JWT token (for protected routes)
-export function authMiddleware(
-  req: Request,
-  res: Response,
-  next: NextFunction
-) {
+export function authMiddleware(req: Request, res: Response, next: NextFunction) {
   try {
     // Get token from Authorization header
     const authHeader = req.headers.authorization;
@@ -58,10 +53,7 @@ export function authMiddleware(
 
         // Check if user is banned
         if (user.isBanned) {
-          console.log(
-            "Auth middleware: Banned user attempted access:",
-            user.username
-          );
+          console.log("Auth middleware: Banned user attempted access:", user.username);
           return res.status(403).json({ message: "Account banned" });
         }
 
@@ -80,11 +72,7 @@ export function authMiddleware(
 }
 
 // Special middleware for routes that should be accessible by banned users
-export function banStatusMiddleware(
-  req: Request,
-  res: Response,
-  next: NextFunction
-) {
+export function banStatusMiddleware(req: Request, res: Response, next: NextFunction) {
   try {
     // Get token from Authorization header
     const authHeader = req.headers.authorization;
@@ -121,11 +109,7 @@ export function banStatusMiddleware(
 }
 
 // Admin-only middleware - must come after authMiddleware
-export function adminMiddleware(
-  req: Request,
-  res: Response,
-  next: NextFunction
-) {
+export function adminMiddleware(req: Request, res: Response, next: NextFunction) {
   if (!req.user) {
     return res.status(401).json({ message: "Unauthorized" });
   }
@@ -140,11 +124,7 @@ export function adminMiddleware(
 }
 
 // Owner-only middleware - must come after authMiddleware
-export function ownerMiddleware(
-  req: Request,
-  res: Response,
-  next: NextFunction
-) {
+export function ownerMiddleware(req: Request, res: Response, next: NextFunction) {
   if (!req.user) {
     return res.status(401).json({ message: "Unauthorized" });
   }
@@ -192,11 +172,8 @@ export function setupAuth(app: Express) {
       });
     } catch (error) {
       console.error("Registration error:", error);
-      const errorMessage =
-        error instanceof Error ? error.message : "Unknown error";
-      res
-        .status(500)
-        .json({ message: "Registration failed", error: errorMessage });
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      res.status(500).json({ message: "Registration failed", error: errorMessage });
     }
   });
 
@@ -207,10 +184,7 @@ export function setupAuth(app: Express) {
 
       const user = await storage.getUserByUsername(req.body.username);
 
-      if (
-        !user ||
-        !(await comparePasswords(req.body.password, user.password))
-      ) {
+      if (!user || !(await comparePasswords(req.body.password, user.password))) {
         console.log("Login failed: Invalid credentials");
         return res.status(401).json({ message: "Invalid credentials" });
       }
@@ -230,8 +204,7 @@ export function setupAuth(app: Express) {
       });
     } catch (error) {
       console.error("Login error:", error);
-      const errorMessage =
-        error instanceof Error ? error.message : "Unknown error";
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
       res.status(500).json({ message: "Login failed", error: errorMessage });
     }
   });

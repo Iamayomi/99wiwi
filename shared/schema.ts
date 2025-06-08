@@ -1,12 +1,4 @@
-import {
-  pgTable,
-  text,
-  serial,
-  integer,
-  boolean,
-  timestamp,
-  decimal,
-} from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, decimal } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -15,9 +7,7 @@ export const users = pgTable("users", {
   username: text("username").notNull().unique(),
   email: text("email").notNull(),
   password: text("password").notNull(),
-  balance: decimal("balance", { precision: 10, scale: 2 })
-    .default("10000")
-    .notNull(),
+  balance: decimal("balance", { precision: 10, scale: 2 }).default("10000").notNull(),
   playCount: integer("play_count").default(0).notNull(),
   isAdmin: boolean("is_admin").default(false).notNull(),
   isOwner: boolean("is_owner").default(false).notNull(),
@@ -114,9 +104,7 @@ export const insertTransactionSchema = createInsertSchema(transactions).omit({
   timestamp: true,
 });
 
-export const insertCoinTransactionSchema = createInsertSchema(
-  coinTransactions
-).omit({
+export const insertCoinTransactionSchema = createInsertSchema(coinTransactions).omit({
   id: true,
   timestamp: true,
 });
@@ -150,11 +138,7 @@ export const adminBanUserSchema = z.object({
 });
 
 export const banAppealSchema = z.object({
-  reason: z
-    .string()
-    .min(10)
-    .max(1000)
-    .describe("Explain why your ban should be lifted"),
+  reason: z.string().min(10).max(1000).describe("Explain why your ban should be lifted"),
 });
 
 export const adminBanAppealResponseSchema = z.object({
@@ -174,10 +158,7 @@ export const adminMassBonusSchema = z.object({
   amount: z.number().positive().min(1).max(10000),
   reason: z.string().min(3).max(200),
   message: z.string().min(3).max(200),
-  targetType: z
-    .enum(["all", "new", "active", "veteran", "custom"])
-    .optional()
-    .default("all"),
+  targetType: z.enum(["all", "new", "active", "veteran", "custom"]).optional().default("all"),
   filters: z
     .object({
       minPlayCount: z.number().int().min(0).optional(),
@@ -198,14 +179,7 @@ export const adminAnnouncementSchema = z.object({
 
 // Schema for game configuration updates
 export const adminGameConfigSchema = z.object({
-  gameType: z.enum([
-    "slots",
-    "dice",
-    "crash",
-    "roulette",
-    "blackjack",
-    "plinko",
-  ]),
+  gameType: z.enum(["slots", "dice", "crash", "roulette", "blackjack", "plinko"]),
   config: z.record(z.any()), // Game-specific configuration as key-value pairs
 });
 
@@ -268,18 +242,14 @@ export type CoinTransaction = typeof coinTransactions.$inferSelect;
 export type AdminUserUpdate = z.infer<typeof adminUserUpdateSchema>;
 export type AdminBanUser = z.infer<typeof adminBanUserSchema>;
 export type BanAppeal = z.infer<typeof banAppealSchema>;
-export type AdminBanAppealResponse = z.infer<
-  typeof adminBanAppealResponseSchema
->;
+export type AdminBanAppealResponse = z.infer<typeof adminBanAppealResponseSchema>;
 export type InsertBanAppeal = z.infer<typeof insertBanAppealSchema>;
 export type BanAppealType = typeof banAppeals.$inferSelect;
 export type AdminCoinAdjustment = z.infer<typeof adminCoinAdjustmentSchema>;
 export type AdminMassBonus = z.infer<typeof adminMassBonusSchema>;
 export type AdminAnnouncement = z.infer<typeof adminAnnouncementSchema>;
 export type AdminGameConfig = z.infer<typeof adminGameConfigSchema>;
-export type AdminAssignSubscription = z.infer<
-  typeof adminAssignSubscriptionSchema
->;
+export type AdminAssignSubscription = z.infer<typeof adminAssignSubscriptionSchema>;
 export type InsertPayment = z.infer<typeof insertPaymentSchema>;
 export type Payment = typeof payments.$inferSelect;
 export type InsertLoginReward = z.infer<typeof insertLoginRewardSchema>;
@@ -381,32 +351,11 @@ export const rouletteResultSchema = z.object({
 // Blackjack schemas
 export const cardSchema = z.object({
   suit: z.enum(["hearts", "diamonds", "clubs", "spades"]),
-  value: z.enum([
-    "2",
-    "3",
-    "4",
-    "5",
-    "6",
-    "7",
-    "8",
-    "9",
-    "10",
-    "J",
-    "Q",
-    "K",
-    "A",
-  ]),
+  value: z.enum(["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"]),
   hidden: z.boolean().optional(),
 });
 
-export const blackjackActionSchema = z.enum([
-  "hit",
-  "stand",
-  "double",
-  "split",
-  "surrender",
-  "insurance",
-]);
+export const blackjackActionSchema = z.enum(["hit", "stand", "double", "split", "surrender", "insurance"]);
 
 export const blackjackHandSchema = z.object({
   cards: z.array(cardSchema),
@@ -437,27 +386,9 @@ export const blackjackBetSchema = z.object({
 });
 
 // Poker schemas
-export const pokerHandTypeSchema = z.enum([
-  "high-card",
-  "pair",
-  "two-pair",
-  "three-of-a-kind",
-  "straight",
-  "flush",
-  "full-house",
-  "four-of-a-kind",
-  "straight-flush",
-  "royal-flush",
-]);
+export const pokerHandTypeSchema = z.enum(["high-card", "pair", "two-pair", "three-of-a-kind", "straight", "flush", "full-house", "four-of-a-kind", "straight-flush", "royal-flush"]);
 
-export const pokerActionSchema = z.enum([
-  "check",
-  "bet",
-  "call",
-  "raise",
-  "fold",
-  "all-in",
-]);
+export const pokerActionSchema = z.enum(["check", "bet", "call", "raise", "fold", "all-in"]);
 
 export const pokerPlayerSchema = z.object({
   id: z.number().int(),
@@ -531,17 +462,13 @@ export const ticketMessages = pgTable("ticket_messages", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-export const insertSupportTicketSchema = createInsertSchema(
-  supportTickets
-).omit({
+export const insertSupportTicketSchema = createInsertSchema(supportTickets).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
 });
 
-export const insertTicketMessageSchema = createInsertSchema(
-  ticketMessages
-).omit({
+export const insertTicketMessageSchema = createInsertSchema(ticketMessages).omit({
   id: true,
   createdAt: true,
 });
@@ -561,9 +488,7 @@ export const passwordResetTokens = pgTable("password_reset_tokens", {
   isUsed: boolean("is_used").default(false).notNull(),
 });
 
-export const insertPasswordResetTokenSchema = createInsertSchema(
-  passwordResetTokens
-).omit({
+export const insertPasswordResetTokenSchema = createInsertSchema(passwordResetTokens).omit({
   id: true,
   createdAt: true,
 });
@@ -579,9 +504,7 @@ export const passwordResetSchema = z
     path: ["confirmPassword"],
   });
 
-export type InsertPasswordResetToken = z.infer<
-  typeof insertPasswordResetTokenSchema
->;
+export type InsertPasswordResetToken = z.infer<typeof insertPasswordResetTokenSchema>;
 export type PasswordResetToken = typeof passwordResetTokens.$inferSelect;
 export type PasswordReset = z.infer<typeof passwordResetSchema>;
 

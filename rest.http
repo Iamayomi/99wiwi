@@ -1,0 +1,13 @@
+#### SEND REQUEST TO GETS A PROFILE
+GET http://localhost:5000/api/v1/users/profile
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im5vdEBnbWFpbC5jb20iLCJ1c2VySWQiOjEsImlhdCI6MTczNTM4NzQ4MSwiZXhwIjoxNzM1NDczODgxfQ.6SlVtKAGykfS-zTqfYsOh2MdoV5wzalaNHbBNx1p38c
+
+#### LOGIN A USER
+POST  http://localhost:5000/api/register
+Content-Type: application/json
+
+{
+  "username": "ayonz",
+  "email": "ayomidesherif2019@gmail.com",
+  "password": "Testing26377#!@"
+}

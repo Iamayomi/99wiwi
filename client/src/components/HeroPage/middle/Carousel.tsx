@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import axios from "axios";
+import IMAGES from "../../../images"
 
 export default function Carousel() {
   const [banners, setBanners] = useState<string[]>([]);
@@ -9,14 +10,25 @@ export default function Carousel() {
   // Fetch banners from API
   useEffect(() => {
     const fetchBanners = async () => {
-      try {
-        const response = await axios.get<{ filenames: string[] }>(
-          "https://ggwiwigamesbe.onrender.com/admin/banners"
-        );
-        setBanners(response.data.filenames || []);
-      } catch (error) {
-        console.error("Error fetching banners:", error);
-      }
+    const imgs = [
+      IMAGES.bacarat,
+      IMAGES.crash,
+      IMAGES.blackjack,
+      IMAGES.dice,
+      IMAGES.case_battle,
+      IMAGES.treasure,
+      IMAGES.mine,
+      IMAGES.welcomebonus,
+    ]
+    setBanners(imgs)
+    //   try {
+    //     const response = await axios.get<{ filenames: string[] }>(
+    //       "https://ggwiwigamesbe.onrender.com/admin/banners"
+    //     );
+    //     setBanners(response.data.filenames || []);
+    //   } catch (error) {
+    //     console.error("Error fetching banners:", error);
+    //   }
     };
 
     fetchBanners();
@@ -42,14 +54,14 @@ export default function Carousel() {
   }, [banners]);
 
   return (
-    <div className="relative w-full h-[200px] lg:h-[300px] overflow-hidden">
+    <div className="relative w-full h-[400px] lg:h-[400px] overflow-hidden">
       <div className="relative flex h-full">
         {banners.map((image, index) => (
           <img
             key={index}
-            src={`https://ggwiwigamesbe.onrender.com/images/${image}`}
+            src={`${image}`}
             alt={`Slide ${index + 1}`}
-            className={`absolute w-full h-[300px] lg:h-full transition-opacity duration-700 ${
+            className={`absolute w-full h-[400px] lg:h-full transition-opacity duration-700 ${
               index === currentIndex ? "opacity-100" : "opacity-0"
             }`}
             style={{ objectFit: "cover" }}
