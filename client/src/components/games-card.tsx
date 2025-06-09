@@ -3,36 +3,25 @@ import GameCard from "./HeroPage/gamesUI/_component/gameCard";
 
 const games = [
   {
-    name: "BlackjackGame",
+    name: "Blackjack Game",
     img: IMAGES.blackjack,
     color: "bg-black border-black",
   },
-  { name: "Mines", img: IMAGES.mine, color: "bg-primary border-primary" },
+
+  { name: "Crash Game", img: IMAGES.crash, color: "bg-yellow-500 border-yellow-500" },
+
+  { name: "Dice Game", img: IMAGES.dice, color: "bg-primary border-primary" },
   {
-    name: "Case battle",
-    img: IMAGES.case_battle,
-    color: "bg-yellow-600 border-yellow-600",
-  },
-  { name: "CrashGame", img: IMAGES.crash, color: "bg-primary border-primary" },
-  { name: "Roll", img: IMAGES.roll, color: "bg-yellow-500 border-yellow-500" },
-  { name: "Dice Duel", img: IMAGES.dice, color: "bg-primary border-primary" },
-  {
-    name: "BaccaratGame",
+    name: "Baccarat Game",
     img: IMAGES.bacarat,
-    color: "bg-primary border-primary",
+    color: "bg-yellow-500 border-yellow-500",
   },
 
   {
-    name: "RouletteGame",
+    name: "Roulette Game",
     img: IMAGES.rocket,
     color: "bg-primary border-primary",
   },
-  {
-    name: "SlideGame",
-    img: IMAGES.case_battle,
-    color: "bg-primary border-primary",
-  },
-  { name: "VideoPoker", img: IMAGES.roll, color: "bg-primary border-primary" },
 ];
 
 const GamesCard = () => {
@@ -42,7 +31,7 @@ const GamesCard = () => {
       {/* <div className="uppercase mb-2"> Games</div> */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-2 mb-6">
         {games.map((game) => (
-          <a key={game.name} href={`/${game.name.toLowerCase().replace(/\s+/g, "_")}`}>
+          <a key={game.name} href={`/${game.name.toLowerCase().replace(/game/gi, "").trim()}`}>
             <GameCard {...game} />
           </a>
         ))}
