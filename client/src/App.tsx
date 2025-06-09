@@ -27,6 +27,7 @@ import ForgotPasswordPage from "@/pages/forgot-password-page";
 import ResetPasswordPage from "@/pages/reset-password-page";
 import { ProtectedRoute } from "./lib/protected-route";
 import { ConditionalRoute } from "./lib/conditional-route";
+import Leaderboard from "./components/HeroPage/leaderboard";
 
 function Router() {
   return (
@@ -45,6 +46,7 @@ function Router() {
       <ProtectedRoute path="/support" component={SupportPage} />
       <ProtectedRoute path="/admin" component={AdminPage} />
       <Route path="/auth" component={AuthPage} />
+      <Route path="/leaderboard" component={Leaderboard} />
       <Route path="/forgot-password" component={ForgotPasswordPage} />
       <Route path="/reset-password" component={ResetPasswordPage} />
       <Route path="/privacy-policy" component={PrivacyPolicyPage} />

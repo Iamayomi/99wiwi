@@ -18,7 +18,7 @@ const GameCard: React.FC<GameCardProps> = ({
   const [hovered, setHovered] = useState<boolean>(false);
 
   return (
-    <Glowcard color={color} size="12rem" position="50% 100%">
+    <Glowcard color={color} size="18rem" position="50% 100%">
       <div
         className="flex flex-col items-start p-4 rounded-lg relative overflow-hidden min-h-72 group"
         onMouseEnter={() => setHovered(true)}
