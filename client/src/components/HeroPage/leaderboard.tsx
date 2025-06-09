@@ -12,13 +12,7 @@ interface MatchResult {
 }
 
 const generateMatchResult = (): MatchResult => {
-  const players = [
-    "Jack Hunter",
-    "Alex Smith",
-    "Mike Johnson",
-    "Sarah Davis",
-    "Tom Wilson",
-  ];
+  const players = ["Jack Hunter", "Alex Smith", "Mike Johnson", "Sarah Davis", "Tom Wilson"];
   const bets = [200, 300, 400, 500, 600, 700, 800, 900, 1000];
 
   return {
@@ -100,38 +94,23 @@ const Leaderboard: React.FC = () => {
         {matches.map((match, index) => (
           <div
             key={match.id}
-            className={`bg-black/60 rounded px-3 py-2.5 border border-red-400/20 transition-all duration-500 ${
-              index === 0
-                ? "animate-pulse bg-green-900/20 border-green-400/30"
-                : ""
-            }`}
-          >
+            className={`bg-black/60 rounded px-3 py-2.5 border border-red-400/20 transition-all duration-500 ${index === 0 ? "animate-pulse bg-green-900/20 border-green-400/30" : ""}`}>
             <div className="flex items-center gap-2 mb-2">
-              <span className="text-white text-xs font-medium">
-                {match.game}
-              </span>
+              <span className="text-white text-xs font-medium">{match.game}</span>
               <div className="w-0.5 h-3 bg-gray-500"></div>
               <div className="flex items-center gap-1">
                 <div className="w-5 h-5 rounded-full overflow-hidden border border-blue-400/50">
-                  <img
-                    src={`https://i.pravatar.cc/40?u=${match.player}`}
-                    alt={match.player}
-                    className="w-full h-full object-cover"
-                  />
+                  <img src={`https://i.pravatar.cc/40?u=${match.player}`} alt={match.player} className="w-full h-full object-cover" />
                 </div>
                 <span className="text-white text-xs">{match.player}</span>
               </div>
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1">
-                <div className="w-3 h-3 bg-yellow-500 rounded-full flex items-center justify-center text-[8px]">
-                  💰
-                </div>
+                <div className="w-3 h-3 bg-yellow-500 rounded-full flex items-center justify-center text-[8px]">💰</div>
                 <span className="text-white text-xs">Bet: ${match.bet}</span>
               </div>
-              <div className="bg-green-600 px-1.5 py-0.5 rounded text-white text-xs font-medium">
-                {match.result}
-              </div>
+              <div className="bg-green-600 px-1.5 py-0.5 rounded text-white text-xs font-medium">{match.result}</div>
             </div>
           </div>
         ))}

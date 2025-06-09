@@ -1,7 +1,7 @@
 import { useAuth } from "@/hooks/use-auth";
 // import MainLayout from "@/components/layouts/main-layout";
 import ButtomBar from "@/components/layouts/bottom-bar";
-import FeatureGames from "@/components/featured-games";
+import GamesCard from "@/components/games-card";
 import SlotsGame from "@/components/games/slots-game";
 import DiceGame from "@/components/games/dice-game";
 import CrashGame from "@/components/games/crash-game";
@@ -142,8 +142,8 @@ export default function HomePage() {
 
         {/* Featured Games */}
         <div className="mb-10">
-          <h2 className="text-xl font-heading font-bold mb-4">Featured Games</h2>
-          <FeatureGames />
+          <h2 className="text-xl font-heading font-bold mb-4">Games</h2>
+          <GamesCard />
         </div>
 
         {/* Game Previews */}
