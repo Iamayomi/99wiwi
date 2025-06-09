@@ -11,15 +11,12 @@ const FooterMenu: React.FC = () => {
             <div className="p-0.5 text-sm hover:text-[#c2c2c2] duration-300">
               About us
             </div>
-            <div className="p-0.5 text-sm hover:text-[#c2c2c2] duration-300">
-              Terms and Conditions
-            </div>
-            <div className="p-0.5 text-sm hover:text-[#c2c2c2] duration-300">
-              Affiliate Program
-            </div>
-            <div className="p-0.5 text-sm hover:text-[#c2c2c2] duration-300">
-              Become an agent
-            </div>
+            {/* <a href="/terms-of-service" className="new"> */}
+              <div className="p-0.5 text-sm hover:text-[#c2c2c2] duration-300">
+                Terms and Conditions
+              </div>
+            {/* </a> */}
+
             <div className="p-0.5 text-sm hover:text-[#c2c2c2] duration-300">
               Сookie Policy
             </div>
