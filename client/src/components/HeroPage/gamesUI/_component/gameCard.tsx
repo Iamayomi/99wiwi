@@ -18,7 +18,7 @@ const GameCard: React.FC<GameCardProps> = ({
   const [hovered, setHovered] = useState<boolean>(false);
 
   return (
-    <Glowcard color={color} size="18rem" position="50% 100%">
+    <Glowcard color={color} size="12rem" position="50% 100%">
       <div
         className="flex flex-col items-start p-4 rounded-lg relative overflow-hidden min-h-72 group"
         onMouseEnter={() => setHovered(true)}
@@ -39,7 +39,7 @@ const GameCard: React.FC<GameCardProps> = ({
         </div>
 
         {/* Description */}
-        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 text-sm font-light">
+        <div className="absolute bottom-10 left-1/2 -translate-x-1/2">
           {desc}
         </div>
 
@@ -50,6 +50,7 @@ const GameCard: React.FC<GameCardProps> = ({
           }`}
         >
           <div className="text-lg uppercase font-bold">{name}</div>
+
           <button
             className={`${color} flex items-center rounded-lg p-2 relative text-lg gap-2`}
           >

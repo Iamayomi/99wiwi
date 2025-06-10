@@ -28,6 +28,10 @@ import ResetPasswordPage from "@/pages/reset-password-page";
 import { ProtectedRoute } from "./lib/protected-route";
 import { ConditionalRoute } from "./lib/conditional-route";
 import Leaderboard from "./components/HeroPage/leaderboard";
+import AboutUsPage from "./pages/about-us";
+import CookiePolicyPage from "./pages/cookie-policy";
+import HowToBetPage from "./pages/howToBet";
+import ContactUsPage from "./pages/contact-us";
 
 function Router() {
   return (
@@ -51,6 +55,10 @@ function Router() {
       <Route path="/reset-password" component={ResetPasswordPage} />
       <Route path="/privacy-policy" component={PrivacyPolicyPage} />
       <Route path="/terms-of-service" component={TermsOfServicePage} />
+      <Route path="/about-us" component={AboutUsPage} />
+      <Route path="/cookie-policy" component={CookiePolicyPage} />
+      <Route path="/howToBet" component={HowToBetPage} />
+      <Route path="/contact-us" component={ContactUsPage} />
       <Route component={NotFound} />
     </Switch>
   );

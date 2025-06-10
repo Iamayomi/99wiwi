@@ -219,7 +219,7 @@ const GamingUI = () => {
       </div>
 
       {/* Other Games */}
-      <div className="uppercase mb-2">Other Games</div>
+      <div className="uppercase mb-2 text-white">Other Games</div>
       <div className="grid grid-cols-2 md:grid-cols-5 gap-2 mb-6">
         {otherGames.map((game) => (
           <a

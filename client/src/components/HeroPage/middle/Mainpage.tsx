@@ -7,7 +7,7 @@ const Mainpage = () => {
   return (
     <section className="px-[5px] w-full lg:w-[80%] h-full bg-[#1A1A1A] ">
       <Carousel />
-      <GamingUI />
+      {/* <GamingUI /> */}
     </section>
   );
 };

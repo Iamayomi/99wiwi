@@ -38,17 +38,16 @@ const Footer: React.FC = () => {
             <p>
               99wiwi uses cookies to ensure the best user experience. By
               remaining on the website, you consent to the use of your cookie
-              files on Melbet.{" "}
+              files on 99wiwi.{" "}
               <span className="font-bold underline">Find out more</span>
             </p>
-            <p>© 2015 - 2025, All rights reserved and protected by law.</p>
+            <p>© 2025, All rights reserved and protected by law.</p>
             <p>
               The platform&apos;s interface and code are protected by copyright
               laws and are registered with the UK&apos;s Copyright House as of
-              July 5, 2024, under Certificate of Registration IDs WS972540219
-              and WS972540218. Unauthorized use, reproduction, or distribution
-              of any content from the website is strictly prohibited and may
-              result in legal action.
+              June 25, 2025. Unauthorized use, reproduction, or distribution of
+              any content from the website is strictly prohibited and may result
+              in legal action.
             </p>
           </div>
 
