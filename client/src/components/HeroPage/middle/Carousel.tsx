@@ -21,14 +21,6 @@ export default function Carousel() {
       IMAGES.welcomebonus,
     ]
     setBanners(imgs)
-    //   try {
-    //     const response = await axios.get<{ filenames: string[] }>(
-    //       "https://ggwiwigamesbe.onrender.com/admin/banners"
-    //     );
-    //     setBanners(response.data.filenames || []);
-    //   } catch (error) {
-    //     console.error("Error fetching banners:", error);
-    //   }
     };
 
     fetchBanners();
