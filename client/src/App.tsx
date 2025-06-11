@@ -33,6 +33,7 @@ import CookiePolicyPage from "./pages/cookie-policy";
 import HowToBetPage from "./pages/howToBet";
 import ContactUsPage from "./pages/contact-us";
 import Footer from "./components/HeroPage/Footer";
+import ProfilePage from "./pages/profilePage";
 
 function Router() {
   return (
@@ -54,6 +55,7 @@ function Router() {
       <ProtectedRoute path="/subscriptions" component={SubscriptionPage} />
       <ProtectedRoute path="/support" component={SupportPage} />
       <ProtectedRoute path="/admin" component={AdminPage} />
+      <ProtectedRoute path="/profile" component={ProfilePage} />
       <Route path="/auth" component={AuthPage} />
       <Route path="/leaderboard" component={Leaderboard} />
       <Route path="/forgot-password" component={ForgotPasswordPage} />
@@ -76,7 +78,7 @@ function App() {
         <AuthProvider>
           <BanNotification />
           <Router />
-          <Footer />
+          {/* <Footer /> */}
 
           <Toaster />
         </AuthProvider>
