@@ -82,7 +82,7 @@ export default function ProfilePage() {
 
         <RewardsPage/>
       </div>
-      <Footer />
+      {/* <Footer /> */}
 
     </ButtomBar>
   );
