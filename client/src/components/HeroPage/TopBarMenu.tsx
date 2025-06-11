@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { FaChevronDown } from "react-icons/fa";
 import logo from "../../logo.png";
+import { Link } from "wouter";
 
 // Real-time clock component
 const Clock: React.FC = () => {
@@ -28,9 +29,9 @@ const TopBarMenu: React.FC = () => {
       <div className="max-w-screen-xl mx-auto flex items-center justify-between px-4">
         {/* First Group: Logo */}
         <div className="flex items-center">
-          <a href="/" className="flex-shrink-0">
+          <Link to="/" className="flex-shrink-0">
             <img className="w-24 xl:w-28" src={logo} alt="Logo" />
-          </a>
+          </Link>
         </div>
 
         {/* Second Group: Clock, Language, Button */}
@@ -45,11 +46,11 @@ const TopBarMenu: React.FC = () => {
           </div>
 
           {/* Button */}
-          <a href="/auth" className="start">
+          <Link to="/auth" className="start">
             <div className="px-4 py-2 text-[15px] text-white bg-[#CF2728] hover:bg-[#4d4c4c] rounded-sm cursor-pointer transition-all">
               Get started
             </div>
-          </a>
+          </Link>
         </div>
       </div>
     </div>

@@ -32,11 +32,16 @@ import AboutUsPage from "./pages/about-us";
 import CookiePolicyPage from "./pages/cookie-policy";
 import HowToBetPage from "./pages/howToBet";
 import ContactUsPage from "./pages/contact-us";
+import Footer from "./components/HeroPage/Footer";
 
 function Router() {
   return (
     <Switch>
-      <ConditionalRoute path="/" loggedInComponent={DashboardPage} loggedOutComponent={Home} />
+      <ConditionalRoute
+        path="/"
+        loggedInComponent={DashboardPage}
+        loggedOutComponent={Home}
+      />
       <ProtectedRoute path="/slots" component={SlotsPage} />
       <ProtectedRoute path="/dice" component={DicePage} />
       <ProtectedRoute path="/crash" component={CrashPage} />
@@ -64,7 +69,6 @@ function Router() {
   );
 }
 
-
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
@@ -72,6 +76,8 @@ function App() {
         <AuthProvider>
           <BanNotification />
           <Router />
+          <Footer />
+
           <Toaster />
         </AuthProvider>
       </HelmetProvider>

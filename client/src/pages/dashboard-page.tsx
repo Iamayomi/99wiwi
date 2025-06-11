@@ -9,6 +9,8 @@ import TransactionHistory from "@/components/transaction-history";
 import { Button } from "@/components/ui/button";
 import { Trophy, Award, CreditCard, Zap, Crown, Gift } from "lucide-react";
 import { Link } from "wouter";
+import GamingUI from "@/components/HeroPage/gamesUI";
+
 
 export default function HomePage() {
   const { user } = useAuth();
@@ -143,7 +145,8 @@ export default function HomePage() {
         {/* Featured Games */}
         <div className="mb-10">
           <h2 className="text-xl font-heading font-bold mb-4">Featured Games</h2>
-          <FeatureGames />
+           <GamingUI />
+          {/* <FeatureGames /> */}
         </div>
 
         {/* Game Previews */}

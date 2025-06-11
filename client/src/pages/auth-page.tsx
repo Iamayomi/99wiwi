@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+
 import {
   Form,
   FormControl,
@@ -19,6 +20,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useAuth } from "@/hooks/use-auth";
 
+import logo from "../../src/logo.png";
 // Form schemas
 const loginSchema = z.object({
   username: z.string().min(3, "Username must be at least 3 characters"),
@@ -96,9 +98,13 @@ export default function AuthPage() {
         <Card className="w-full max-w-md bg-[#1E1E1E] border-[#333333]">
           <CardContent className="pt-6">
             <div className="text-center mb-6">
-              <h1 className="text-2xl font-heading font-bold bg-gradient-to-r from-[#5465FF] to-[#00E701] bg-clip-text text-transparent mb-2">
-                99wiwi
-              </h1>
+              {/* First Group: Logo */}
+              <div className="flex items-center">
+                <Link to="/" className="flex-shrink-0">
+                  <img className="w-24 xl:w-28" src={logo} alt="Logo" />
+                </Link>
+              </div>
+
               <p className="text-gray-400">
                 Sign in to start playing or create a new account
               </p>
@@ -324,7 +330,6 @@ export default function AuthPage() {
             <h2 className="text-3xl md:text-4xl font-heading font-bold mb-4">
               Experience the Thrill of{" "}
               <span className="text-[#5465FF]">99wiwi</span>{" "}
-              <span className="text-[#00E701]">Bet</span>
             </h2>
             <p className="text-gray-400 mb-6">
               Join thousands of players in the most exciting 99wiwi games. Play
