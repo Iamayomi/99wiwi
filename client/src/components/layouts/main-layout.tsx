@@ -83,7 +83,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
     { href: "/plinko", icon: <Dices size={18} />, label: "Plinko" },
     { href: "/purchase", icon: <Coins size={18} />, label: "Buy Coins" },
     { href: "/history", icon: <Clock size={18} />, label: "History" },
-    { href: "/rewards", icon: <Gift size={18} />, label: "Rewards" },
+    // { href: "/rewards", icon: <Gift size={18} />, label: "Rewards" },
     { href: "/profile", icon: <Gift size={18} />, label: "Profile" },
     { href: "/subscriptions", icon: <Crown size={18} />, label: "VIP" },
     { href: "/support", icon: <MessageSquare size={18} />, label: "Support" },
@@ -97,7 +97,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
   const mobilePrimaryNav = [
     { href: "/", icon: <Home size={18} />, label: "Home" },
     { href: "/purchase", icon: <Coins size={18} />, label: "Buy" },
-    { href: "/rewards", icon: <Gift size={18} />, label: "Rewards" },
+    // { href: "/rewards", icon: <Gift size={18} />, label: "Rewards" },
     { href: "/profile", icon: <Gift size={18} />, label: "Profile" },
   ];
 
