@@ -8,7 +8,6 @@ import Glowcard from "./_component/glowcard";
 import IMAGES from "../../../images";
 import axios from "axios";
 
-
 const featuredGames = [
   {
     name: "Rock, Paper",
@@ -77,7 +76,7 @@ const liveGamesFallback = [
 
 const otherGames = [
   {
-    name: "BlackjackGame",
+    name: "Blackjack",
     img: IMAGES.blackjack,
     color: "bg-black border-black",
   },
@@ -118,9 +117,7 @@ const GamingUI = () => {
   useEffect(() => {
     const fetchGames = async () => {
       try {
-        const response = await axios.get(
-          "https://ggwiwigamesbe.onrender.com/admin/games"
-        );
+        const response = await axios.get("https://ggwiwigamesbe.onrender.com/admin/games");
         setGames(response.data);
       } catch (error) {
         console.error("Error fetching games:", error);
@@ -135,19 +132,9 @@ const GamingUI = () => {
     games.length > 0
       ? games.filter((game) => {
           // Filter by category unless 'All Games' selected
-          if (
-            selectedCategory !== "All Games" &&
-            game.category !== selectedCategory
-          )
-            return false;
+          if (selectedCategory !== "All Games" && game.category !== selectedCategory) return false;
           // Filter by search (case insensitive)
-          if (
-            search &&
-            !(game.gameName || game.name || "")
-              .toLowerCase()
-              .includes(search.toLowerCase())
-          )
-            return false;
+          if (search && !(game.gameName || game.name || "").toLowerCase().includes(search.toLowerCase())) return false;
           return true;
         })
       : [];
@@ -157,30 +144,15 @@ const GamingUI = () => {
   const featuredGamesToShow = games.length > 0 ? filteredGames : featuredGames;
 
   // Helper for building path with query string if slug present
-  const buildPath = (game) =>
-    game.slug
-      ? `/${game.slug}?id=${game._id}`
-      : game.path || `/${game.name?.toLowerCase().replace(/\s+/g, "_")}`;
+  const buildPath = (game) => (game.slug ? `/${game.slug}?id=${game._id}` : game.path || `/${game.name?.toLowerCase().replace(/\s+/g, "_")}`);
 
   return (
     <div className="text-white px-4 md:px-8">
       {/* Top Banner Cards */}
       <div className="flex overflow-x-auto gap-4 mb-6">
-        <Card
-          color="bg-primary text-white"
-          img={IMAGES.welcome2}
-          text="Real-Time Live Games"
-        />
-        <Card
-          color="bg-purple-500 text-white"
-          img={IMAGES.treasure}
-          text="Instant Payouts"
-        />
-        <Card
-          color="bg-green-500 text-white"
-          img={IMAGES.welcomebonus}
-          text="Gaming Community Vibes"
-        />
+        <Card color="bg-primary text-white" img={IMAGES.welcome2} text="Real-Time Live Games" />
+        <Card color="bg-purple-500 text-white" img={IMAGES.treasure} text="Instant Payouts" />
+        <Card color="bg-green-500 text-white" img={IMAGES.welcomebonus} text="Gaming Community Vibes" />
       </div>
 
       {/* Search + Sort */}
@@ -197,8 +169,7 @@ const GamingUI = () => {
           onClick={() => {
             // For now just reset search (you can add real sort logic here)
             setSearch("");
-          }}
-        >
+          }}>
           Sort
         </button>
       </div>
@@ -207,14 +178,7 @@ const GamingUI = () => {
       <div className="uppercase mb-2">Live Casino Games</div>
       <div className="grid grid-cols-2 md:grid-cols-5 gap-2 mb-6">
         {liveGamesToShow.map((game) => (
-          <LiveCard
-            key={game._id || game.name}
-            path={buildPath(game)}
-            name={game.gameName || game.name}
-            img={game.image || game.img}
-            color={game.color}
-            onClick={() => setLocation(buildPath(game))}
-          />
+          <LiveCard key={game._id || game.name} path={buildPath(game)} name={game.gameName || game.name} img={game.image || game.img} color={game.color} onClick={() => setLocation(buildPath(game))} />
         ))}
       </div>
 
@@ -237,10 +201,7 @@ const GamingUI = () => {
       <div className="uppercase mb-2">Other Games</div>
       <div className="grid grid-cols-2 md:grid-cols-5 gap-2 mb-6">
         {otherGames.map((game) => (
-          <a
-            key={game.name}
-            href={`/${game.name.toLowerCase().replace(/\s+/g, "_")}`}
-          >
+          <a key={game.name} href={`/${game.name.toLowerCase().replace(/\s+/g, "_")}`}>
             <GameCard {...game} />
           </a>
         ))}
