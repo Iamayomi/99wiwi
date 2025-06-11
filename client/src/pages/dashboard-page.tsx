@@ -1,6 +1,6 @@
 import { useAuth } from "@/hooks/use-auth";
-// import MainLayout from "@/components/layouts/main-layout";
-import ButtomBar from "@/components/layouts/bottom-bar";
+import MainLayout from "@/components/layouts/main-layout";
+// import BottomBar from "@/components/layouts/bottom-bar";
 import GamesCard from "@/components/games-card";
 import SlotsGame from "@/components/games/slots-game";
 import DiceGame from "@/components/games/dice-game";
@@ -14,7 +14,7 @@ export default function HomePage() {
   const { user } = useAuth();
 
   return (
-    <ButtomBar>
+    <MainLayout>
       <div className="w-full max-w-[1400px] px-4 md:px-6 py-4 mx-auto overflow-hidden">
         {/* Welcome Banner */}
         <div className="bg-gradient-to-r from-[#2A2A2A] to-[#1E1E1E] border border-[#333333] p-6 rounded-xl mb-8 relative overflow-hidden">
@@ -240,6 +240,6 @@ export default function HomePage() {
           <TransactionHistory />
         </div>
       </div>
-    </ButtomBar>
+    </MainLayout>
   );
 }

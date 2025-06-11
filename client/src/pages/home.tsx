@@ -3,7 +3,8 @@ import TopBarMenu from "@/components/HeroPage/TopBarMenu";
 import Leaderboard from "@/components/HeroPage/leaderboard";
 import Mainpage from "@/components/HeroPage/middle/Mainpage";
 import Footer from "@/components/HeroPage/Footer";
-import BottomNav from "@/components/HeroPage/BottomNav";
+// import BottomNav from "@/components/HeroPage/BottomNav";
+// import MainLayout from "@/components/layouts/main-layout";
 import GamingUI from "@/components/HeroPage/gamesUI";
 
 const home = () => {
@@ -18,12 +19,12 @@ const home = () => {
         <Mainpage />
         {/* <Rightside /> */}
       </section>
-      <div className="md:p-10 md:m-10">
+      <div className="">
         <GamingUI />
       </div>
 
       <Footer />
-      <BottomNav />
+      {/* <BottomNav /> */}
     </section>
   );
 };

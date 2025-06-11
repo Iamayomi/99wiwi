@@ -25,6 +25,8 @@ import PrivacyPolicyPage from "@/pages/privacy-policy-page";
 import TermsOfServicePage from "@/pages/terms-of-service-page";
 import ForgotPasswordPage from "@/pages/forgot-password-page";
 import ResetPasswordPage from "@/pages/reset-password-page";
+import LeaderBoardPage from "./pages/leaderboard-page";
+
 import { ProtectedRoute } from "./lib/protected-route";
 
 function Router() {
@@ -37,6 +39,7 @@ function Router() {
       <ProtectedRoute path="/roulette" component={RoulettePage} />
       <ProtectedRoute path="/blackjack" component={BlackjackPage} />
       <ProtectedRoute path="/plinko" component={PlinkoPage} />
+      <ProtectedRoute path="/leaderboard" component={LeaderBoardPage} />
       <ProtectedRoute path="/history" component={HistoryPage} />
       <ProtectedRoute path="/purchase" component={PurchasePage} />
       <ProtectedRoute path="/rewards" component={RewardsPage} />
