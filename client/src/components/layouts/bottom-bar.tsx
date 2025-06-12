@@ -3,13 +3,36 @@ import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { AnnouncementBanner } from "@/components/announcement-banner";
-import { Home, Dices, TrendingUp, Coins, Clock, MessageSquare, Gift, Crown, Settings, LogOut, Menu, X } from "lucide-react";
+import {
+  Home,
+  Dices,
+  TrendingUp,
+  Coins,
+  Clock,
+  MessageSquare,
+  Gift,
+  Crown,
+  Settings,
+  LogOut,
+  Menu,
+  X,
+  User2,
+} from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/lib/game-utils";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+
+import logo from "../../logo.png";
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -31,10 +54,13 @@ function NavItem({ href, icon, label, onClick }: NavItemProps) {
       href={href}
       className={cn(
         "flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors",
-        isActive ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted hover:text-foreground"
+        isActive
+          ? "bg-primary/10 text-primary"
+          : "text-muted-foreground hover:bg-muted hover:text-foreground"
       )}
       onClick={onClick}
-      aria-label={label}>
+      aria-label={label}
+    >
       {icon}
       {label}
     </Link>
@@ -55,12 +81,36 @@ function BottomNavigation({
   handleLogout: () => void;
 }) {
   const gameItems = [
-    { href: "/slots", label: "Slots", icon: <Dices size={24} className="mb-2" /> },
-    { href: "/dice", label: "Dice", icon: <Dices size={24} className="mb-2" /> },
-    { href: "/crash", label: "Crash", icon: <TrendingUp size={24} className="mb-2" /> },
-    { href: "/roulette", label: "Roulette", icon: <Dices size={24} className="mb-2" /> },
-    { href: "/blackjack", label: "Blackjack", icon: <Dices size={24} className="mb-2" /> },
-    { href: "/plinko", label: "Plinko", icon: <Dices size={24} className="mb-2" /> },
+    {
+      href: "/slots",
+      label: "Slots",
+      icon: <Dices size={24} className="mb-2" />,
+    },
+    {
+      href: "/dice",
+      label: "Dice",
+      icon: <Dices size={24} className="mb-2" />,
+    },
+    {
+      href: "/crash",
+      label: "Crash",
+      icon: <TrendingUp size={24} className="mb-2" />,
+    },
+    {
+      href: "/roulette",
+      label: "Roulette",
+      icon: <Dices size={24} className="mb-2" />,
+    },
+    {
+      href: "/blackjack",
+      label: "Blackjack",
+      icon: <Dices size={24} className="mb-2" />,
+    },
+    {
+      href: "/plinko",
+      label: "Plinko",
+      icon: <Dices size={24} className="mb-2" />,
+    },
   ];
 
   return (
@@ -70,8 +120,14 @@ function BottomNavigation({
           <Link
             key={item.href}
             href={item.href}
-            className={cn("flex flex-col items-center px-3 py-2 rounded-md transition-colors", location === item.href ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground")}
-            aria-label={item.label}>
+            className={cn(
+              "flex flex-col items-center px-3 py-2 rounded-md transition-colors",
+              location === item.href
+                ? "text-primary bg-primary/10"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+            aria-label={item.label}
+          >
             {item.icon}
             <span className="text-xs mt-1 font-medium">{item.label}</span>
           </Link>
@@ -91,19 +147,27 @@ function BottomNavigation({
                   ? "text-primary bg-primary/10"
                   : "text-muted-foreground hover:text-foreground"
               )}
-              aria-label="Games Menu">
+              aria-label="Games Menu"
+            >
               <Dices size={18} />
               <span className="text-xs mt-1 font-medium">Games</span>
             </button>
           </SheetTrigger>
-          <SheetContent side="bottom" className="h-[50vh] overflow-y-auto bg-background">
+          <SheetContent
+            side="bottom"
+            className="h-[50vh] overflow-y-auto bg-background"
+          >
             <div className="grid grid-cols-3 gap-4 pt-4 px-4">
               {gameItems.map((game) => (
                 <Link
                   key={game.href}
                   href={game.href}
-                  className={cn("flex flex-col items-center p-3 rounded-md border hover:bg-muted transition-colors", location === game.href ? "bg-muted text-primary" : "")}
-                  aria-label={game.label}>
+                  className={cn(
+                    "flex flex-col items-center p-3 rounded-md border hover:bg-muted transition-colors",
+                    location === game.href ? "bg-muted text-primary" : ""
+                  )}
+                  aria-label={game.label}
+                >
                   {game.icon}
                   <span className="text-sm font-medium">{game.label}</span>
                 </Link>
@@ -117,13 +181,19 @@ function BottomNavigation({
             <button
               className={cn(
                 "flex flex-col items-center px-3 py-2 rounded-md transition-colors",
-                location === "/history" || location === "/subscriptions" || location === "/support" || location === "/admin"
+                location === "/history" ||
+                  location === "/subscriptions" ||
+                  location === "/support" ||
+                  location === "/admin"
                   ? "text-primary bg-primary/10"
                   : "text-muted-foreground hover:text-foreground"
               )}
-              aria-label="Account Menu">
+              aria-label="Account Menu"
+            >
               <Avatar className="h-5 w-5">
-                <AvatarFallback className="text-xs">{user?.username?.charAt(0).toUpperCase() || "U"}</AvatarFallback>
+                <AvatarFallback className="text-xs">
+                  {user?.username?.charAt(0).toUpperCase() || "U"}
+                </AvatarFallback>
               </Avatar>
               <span className="text-xs mt-1 font-medium">Account</span>
             </button>
@@ -149,6 +219,12 @@ function BottomNavigation({
                 Support
               </Link>
             </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href="/profile" className="flex items-center w-full">
+                <User2 size={16} className="mr-2" />
+                Profile
+              </Link>
+            </DropdownMenuItem>
             {isAdmin && (
               <DropdownMenuItem asChild>
                 <Link href="/admin" className="flex items-center w-full">
@@ -158,7 +234,10 @@ function BottomNavigation({
               </DropdownMenuItem>
             )}
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleLogout} className="flex items-center">
+            <DropdownMenuItem
+              onClick={handleLogout}
+              className="flex items-center"
+            >
               <LogOut size={16} className="mr-2" />
               Logout
             </DropdownMenuItem>
@@ -187,15 +266,15 @@ export default function MainLayout({ children }: MainLayoutProps) {
     { href: "/plinko", icon: <Dices size={18} />, label: "Plinko" },
     { href: "/purchase", icon: <Coins size={18} />, label: "Buy Coins" },
     { href: "/history", icon: <Clock size={18} />, label: "History" },
-    { href: "/rewards", icon: <Gift size={18} />, label: "Rewards" },
     { href: "/subscriptions", icon: <Crown size={18} />, label: "VIP" },
     { href: "/support", icon: <MessageSquare size={18} />, label: "Support" },
+    { href: "/profile", icon: <User2 size={18} />, label: "Profile" },
   ];
 
   const mobilePrimaryNav = [
     { href: "/", icon: <Home size={18} />, label: "Home" },
     { href: "/purchase", icon: <Coins size={18} />, label: "Buy" },
-    { href: "/rewards", icon: <Gift size={18} />, label: "Rewards" },
+    // { href: "/rewards", icon: <Gift size={18} />, label: "Rewards" },
   ];
 
   const handleLogout = () => {
@@ -211,11 +290,18 @@ export default function MainLayout({ children }: MainLayoutProps) {
         <>
           <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <div className="container flex h-14 items-center justify-between">
-              <Link href="/" className="flex items-center space-x-2">
-                <span className="font-bold text-xl">99wiwi</span>
-              </Link>
+              {/* Logo */}
+              <div className="flex items-center">
+                <Link to="/" className="flex-shrink-0">
+                  <img className="w-24 xl:w-28" src={logo} alt="Logo" />
+                </Link>
+              </div>
               <div className="flex items-center gap-2">
-                {user && <div className="text-sm font-medium">{formatCurrency(user.balance)}</div>}
+                {user && (
+                  <div className="text-sm font-medium">
+                    {formatCurrency(user.balance)}
+                  </div>
+                )}
                 <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
                   <SheetTrigger asChild>
                     <Button variant="ghost" size="icon" aria-label="Open Menu">
@@ -226,7 +312,12 @@ export default function MainLayout({ children }: MainLayoutProps) {
                     <div className="flex flex-col h-full">
                       <div className="flex items-center justify-between py-2">
                         <h2 className="text-lg font-semibold">Menu</h2>
-                        <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(false)} aria-label="Close Menu">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => setSidebarOpen(false)}
+                          aria-label="Close Menu"
+                        >
                           <X size={18} />
                         </Button>
                       </div>
@@ -234,11 +325,15 @@ export default function MainLayout({ children }: MainLayoutProps) {
                         <div className="border rounded-md p-3 mb-4">
                           <div className="flex items-center gap-3">
                             <Avatar>
-                              <AvatarFallback>{user.username?.charAt(0).toUpperCase()}</AvatarFallback>
+                              <AvatarFallback>
+                                {user.username?.charAt(0).toUpperCase()}
+                              </AvatarFallback>
                             </Avatar>
                             <div>
                               <div className="font-medium">{user.username}</div>
-                              <div className="text-sm text-muted-foreground">Balance: {formatCurrency(user.balance)}</div>
+                              <div className="text-sm text-muted-foreground">
+                                Balance: {formatCurrency(user.balance)}
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -246,13 +341,30 @@ export default function MainLayout({ children }: MainLayoutProps) {
                       <nav className="flex-1 overflow-auto py-2">
                         <div className="flex flex-col gap-1">
                           {navigationItems.map((item) => (
-                            <NavItem key={item.href} href={item.href} icon={item.icon} label={item.label} onClick={() => setSidebarOpen(false)} />
+                            <NavItem
+                              key={item.href}
+                              href={item.href}
+                              icon={item.icon}
+                              label={item.label}
+                              onClick={() => setSidebarOpen(false)}
+                            />
                           ))}
-                          {isAdmin && <NavItem href="/admin" icon={<Settings size={18} />} label="Admin" onClick={() => setSidebarOpen(false)} />}
+                          {isAdmin && (
+                            <NavItem
+                              href="/admin"
+                              icon={<Settings size={18} />}
+                              label="Admin"
+                              onClick={() => setSidebarOpen(false)}
+                            />
+                          )}
                         </div>
                       </nav>
                       <div className="py-4 border-t">
-                        <Button variant="outline" className="w-full justify-start" onClick={handleLogout}>
+                        <Button
+                          variant="outline"
+                          className="w-full justify-start"
+                          onClick={handleLogout}
+                        >
                           <LogOut size={18} className="mr-2" />
                           Logout
                         </Button>
@@ -263,7 +375,13 @@ export default function MainLayout({ children }: MainLayoutProps) {
               </div>
             </div>
           </header>
-          <BottomNavigation mobilePrimaryNav={mobilePrimaryNav} location={location} user={user} isAdmin={isAdmin} handleLogout={handleLogout} />
+          <BottomNavigation
+            mobilePrimaryNav={mobilePrimaryNav}
+            location={location}
+            user={user}
+            isAdmin={isAdmin}
+            handleLogout={handleLogout}
+          />
           <main className="flex-1 p-4 pb-20">{children}</main>
         </>
       )}
@@ -273,32 +391,61 @@ export default function MainLayout({ children }: MainLayoutProps) {
         <div className="flex-1 flex">
           <aside className="hidden lg:flex w-64 flex-col fixed inset-y-0 z-50 border-r bg-background">
             <div className="flex h-14 items-center border-b px-4">
-              <Link href="/" className="flex items-center space-x-2">
-                <span className="font-bold text-xl">99wiwi</span>
-              </Link>
+              {/* Logo */}
+              <div className="flex items-center">
+                <Link to="/" className="flex-shrink-0">
+                  <img className="w-24 xl:w-28" src={logo} alt="Logo" />
+                </Link>
+              </div>
             </div>
             <div className="flex-1 flex flex-col min-h-0 pt-3 px-2">
               <nav className="flex-1 flex flex-col gap-1">
                 {navigationItems.map((item) => (
-                  <NavItem key={item.href} href={item.href} icon={item.icon} label={item.label} />
+                  <NavItem
+                    key={item.href}
+                    href={item.href}
+                    icon={item.icon}
+                    label={item.label}
+                  />
                 ))}
-                {isAdmin && <NavItem href="/admin" icon={<Settings size={18} />} label="Admin" />}
+                {isAdmin && (
+                  <NavItem
+                    href="/admin"
+                    icon={<Settings size={18} />}
+                    label="Admin"
+                  />
+                )}
               </nav>
               {user && (
                 <div className="border-t py-4 mt-auto">
                   <div className="flex items-center justify-between mb-4 px-3">
                     <div className="flex items-center">
                       <Avatar className="h-8 w-8 mr-2">
-                        <AvatarFallback>{user.username?.charAt(0).toUpperCase()}</AvatarFallback>
+                        <AvatarFallback>
+                          {user.username?.charAt(0).toUpperCase()}
+                        </AvatarFallback>
                       </Avatar>
                       <div>
-                        <div className="font-medium text-sm">{user.username}</div>
-                        <div className="text-xs text-muted-foreground">{user.subscriptionTier ? `VIP ${user.subscriptionTier}` : "Free User"}</div>
+                        <div className="font-medium text-sm">
+                          {user.username}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {user.subscriptionTier
+                            ? `VIP ${user.subscriptionTier}`
+                            : "Free User"}
+                        </div>
                       </div>
                     </div>
-                    <div className="text-xs font-medium">{formatCurrency(user.balance)}</div>
+                    <div className="text-xs font-medium">
+                      {formatCurrency(user.balance)}
+                    </div>
                   </div>
-                  <Button variant="outline" size="sm" className="w-full justify-start" onClick={handleLogout}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full justify-start"
+                    onClick={handleLogout}
+                  >
                     <LogOut size={18} className="mr-2" />
                     Logout
                   </Button>
@@ -309,10 +456,19 @@ export default function MainLayout({ children }: MainLayoutProps) {
           <div className="flex-1 lg:pl-64">
             <header className="sticky top-0 z-40 w-full h-14 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
               <div className="flex h-14 items-center px-4">
-                <Link href="/" className="lg:hidden flex items-center space-x-2">
+                <Link
+                  href="/"
+                  className="lg:hidden flex items-center space-x-2"
+                >
                   <span className="font-bold text-xl">99wiwi</span>
                 </Link>
-                <div className="ml-auto flex items-center gap-2">{user && <div className="text-sm font-medium">{formatCurrency(user.balance)}</div>}</div>
+                <div className="ml-auto flex items-center gap-2">
+                  {user && (
+                    <div className="text-sm font-medium">
+                      {formatCurrency(user.balance)}
+                    </div>
+                  )}
+                </div>
               </div>
             </header>
             <main className="flex-1 p-4 lg:p-6">{children}</main>

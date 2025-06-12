@@ -3,7 +3,7 @@ const IMAGES = {
   case_battle: new URL("./case_battle.webp", import.meta.url).href,
   dice: new URL("./dice.png", import.meta.url).href,
   roll: new URL("./roll.png", import.meta.url).href,
-  bacarat: new URL("./bacarat.png", import.meta.url).href,
+  bacarat: new URL("./roll.png", import.meta.url).href,
   blackjack: new URL("./blackjack.png", import.meta.url).href,
   mine: new URL("./mines.png", import.meta.url).href,
   mine2: new URL("./mines2.png", import.meta.url).href,

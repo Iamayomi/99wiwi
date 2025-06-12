@@ -404,12 +404,6 @@ export default function MainLayout({ children }: MainLayoutProps) {
           <div className="flex-1 lg:pl-64">
             <header className="sticky top-0 z-40 w-full h-14 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
               <div className="flex h-14 items-center px-4">
-                {/* Logo */}
-
-                <Link to="/" className="flex-shrink-0">
-                  <img className="w-24 xl:w-28" src={logo} alt="Logo" />
-                </Link>
-
                 <div className="ml-auto flex items-center gap-2">
                   {user && (
                     <div className="text-sm font-medium">

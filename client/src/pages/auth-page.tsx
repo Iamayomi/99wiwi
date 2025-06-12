@@ -98,7 +98,7 @@ export default function AuthPage() {
         <Card className="w-full max-w-md bg-[#1E1E1E] border-[#333333]">
           <CardContent className="pt-6">
             <div className="text-center mb-6">
-              {/* First Group: Logo */}
+              {/* Logo */}
               <div className="flex items-center">
                 <Link to="/" className="flex-shrink-0">
                   <img className="w-24 xl:w-28" src={logo} alt="Logo" />
