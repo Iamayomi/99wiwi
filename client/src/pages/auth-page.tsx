@@ -92,13 +92,13 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#121212] flex flex-col md:flex-row">
-      {/* Left column - Auth forms */}
-      <div className="w-full md:w-1/2 flex items-center justify-center p-6">
+    <>
+      <div className="w-full md:w-1/2 flex items-center justify-center p-6 mx-auto">
+        {/* Your Card component goes here */}
         <Card className="w-full max-w-md bg-[#1E1E1E] border-[#333333]">
           <CardContent className="pt-6">
             <div className="text-center mb-6">
-              {/* Logo */}
+              {/* First Group: Logo */}
               <div className="flex items-center">
                 <Link to="/" className="flex-shrink-0">
                   <img className="w-24 xl:w-28" src={logo} alt="Logo" />
@@ -322,74 +322,6 @@ export default function AuthPage() {
           </CardContent>
         </Card>
       </div>
-
-      {/* Right column - Hero section */}
-      <div className="w-full md:w-1/2 bg-gradient-to-br from-[#1E1E1E] to-[#121212] p-6 flex items-center justify-center">
-        <div className="max-w-lg">
-          <div className="text-center md:text-left mb-6">
-            <h2 className="text-3xl md:text-4xl font-heading font-bold mb-4">
-              Experience the Thrill of{" "}
-              <span className="text-[#5465FF]">99wiwi</span>{" "}
-            </h2>
-            <p className="text-gray-400 mb-6">
-              Join thousands of players in the most exciting 99wiwi games. Play
-              Slots, Dice, and Crash games with our virtual currency.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-            <div className="bg-[#2A2A2A] p-4 rounded-lg flex items-start space-x-3">
-              <div className="w-10 h-10 rounded-full bg-[#5465FF] bg-opacity-20 flex items-center justify-center text-[#5465FF] flex-shrink-0">
-                <i className="ri-shield-check-line"></i>
-              </div>
-              <div>
-                <h3 className="font-heading font-bold mb-1">Secure Gaming</h3>
-                <p className="text-gray-400 text-sm">
-                  Safe and fair games with transparent outcomes
-                </p>
-              </div>
-            </div>
-
-            <div className="bg-[#2A2A2A] p-4 rounded-lg flex items-start space-x-3">
-              <div className="w-10 h-10 rounded-full bg-[#5465FF] bg-opacity-20 flex items-center justify-center text-[#5465FF] flex-shrink-0">
-                <i className="ri-gamepad-line"></i>
-              </div>
-              <div>
-                <h3 className="font-heading font-bold mb-1">Multiple Games</h3>
-                <p className="text-gray-400 text-sm">
-                  Variety of games with different mechanics
-                </p>
-              </div>
-            </div>
-
-            <div className="bg-[#2A2A2A] p-4 rounded-lg flex items-start space-x-3">
-              <div className="w-10 h-10 rounded-full bg-[#5465FF] bg-opacity-20 flex items-center justify-center text-[#5465FF] flex-shrink-0">
-                <i className="ri-coin-line"></i>
-              </div>
-              <div>
-                <h3 className="font-heading font-bold mb-1">
-                  Virtual Currency
-                </h3>
-                <p className="text-gray-400 text-sm">
-                  Start with 10,000 demo credits
-                </p>
-              </div>
-            </div>
-
-            <div className="bg-[#2A2A2A] p-4 rounded-lg flex items-start space-x-3">
-              <div className="w-10 h-10 rounded-full bg-[#5465FF] bg-opacity-20 flex items-center justify-center text-[#5465FF] flex-shrink-0">
-                <i className="ri-line-chart-line"></i>
-              </div>
-              <div>
-                <h3 className="font-heading font-bold mb-1">Track Progress</h3>
-                <p className="text-gray-400 text-sm">
-                  Monitor your wins and transaction history
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    </>
   );
 }
