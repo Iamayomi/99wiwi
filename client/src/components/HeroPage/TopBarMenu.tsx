@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { FaChevronDown } from "react-icons/fa";
+import { FaChevronDown, FaUserAlt } from "react-icons/fa";
 import logo from "../../logo.png";
 import { Link } from "wouter";
 
@@ -42,6 +42,7 @@ const TopBarMenu: React.FC = () => {
           {/* Language Selector */}
           <div className="lg:flex hidden items-center gap-1 text-[14px] cursor-pointer hover:text-gray-300">
             <span>EN</span>
+
             <FaChevronDown size={15} />
           </div>
 
@@ -51,6 +52,12 @@ const TopBarMenu: React.FC = () => {
               Get started
             </div>
           </Link>
+
+          {/* Profile */}
+          <div className="lg:flex relative hidden  text-white justify-center items-center rounded-[5px] bg-[#2E2E2E] px-[2px] py-[12px] h-full w-auto min-w-[45px]">
+            <FaUserAlt />
+            <span className="absolute top-[10%] right-[9%] bg-green-500 rounded-full p-[4px]"></span>
+          </div>
         </div>
       </div>
     </div>

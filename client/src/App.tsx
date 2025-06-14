@@ -55,6 +55,7 @@ function Router() {
       <ProtectedRoute path="/subscriptions" component={SubscriptionPage} />
       <ProtectedRoute path="/support" component={SupportPage} />
       <ProtectedRoute path="/admin" component={AdminPage} />
+      <ProtectedRoute path="/admins" component={AdminPage} />
       <ProtectedRoute path="/profile" component={ProfilePage} />
       <Route path="/auth" component={AuthPage} />
       <Route path="/leaderboard" component={Leaderboard} />
