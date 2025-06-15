@@ -32,7 +32,6 @@ import AboutUsPage from "./pages/about-us";
 import CookiePolicyPage from "./pages/cookie-policy";
 import HowToBetPage from "./pages/howToBet";
 import ContactUsPage from "./pages/contact-us";
-import Footer from "./components/HeroPage/Footer";
 import ProfilePage from "./pages/profilePage";
 
 function Router() {
