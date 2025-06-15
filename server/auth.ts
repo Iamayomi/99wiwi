@@ -219,5 +219,20 @@ export function setupAuth(app: Express) {
     res.json(safeUser);
   });
 
+    // Get user profile
+  app.get("/api/profile", authMiddleware, (req, res) => {
+    const user = req.user as SelectUser;
+
+    console.log("Profile page accessed by:", user.username);
+
+    // Exclude sensitive information like password
+    const { password, ...safeUser } = user;
+
+    res.status(200).json({
+      message: "User profile fetched successfully",
+      profile: safeUser,
+    });
+  });
+
   // No need for logout endpoint with JWT - client just discards the token
 }

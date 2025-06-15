@@ -25,33 +25,43 @@ import PrivacyPolicyPage from "@/pages/privacy-policy-page";
 import TermsOfServicePage from "@/pages/terms-of-service-page";
 import ForgotPasswordPage from "@/pages/forgot-password-page";
 import ResetPasswordPage from "@/pages/reset-password-page";
-import LeaderBoardPage from "./pages/leaderboard-page";
-
 import { ProtectedRoute } from "./lib/protected-route";
+import { ConditionalRoute } from "./lib/conditional-route";
+import Leaderboard from "./components/HeroPage/leaderboard";
+import AboutUsPage from "./pages/about-us";
+import CookiePolicyPage from "./pages/cookie-policy";
+import HowToBetPage from "./pages/howToBet";
+import ContactUsPage from "./pages/contact-us";
+import Footer from "./components/HeroPage/Footer";
+import ProfilePage from "./pages/profilePage";
 
 function Router() {
   return (
     <Switch>
-      <ProtectedRoute path="/dashboard" component={DashboardPage} />
+      <ConditionalRoute path="/" loggedInComponent={DashboardPage} loggedOutComponent={Home} />
       <ProtectedRoute path="/slots" component={SlotsPage} />
       <ProtectedRoute path="/dice" component={DicePage} />
       <ProtectedRoute path="/crash" component={CrashPage} />
       <ProtectedRoute path="/roulette" component={RoulettePage} />
       <ProtectedRoute path="/blackjack" component={BlackjackPage} />
       <ProtectedRoute path="/plinko" component={PlinkoPage} />
-      <ProtectedRoute path="/leaderboard" component={LeaderBoardPage} />
       <ProtectedRoute path="/history" component={HistoryPage} />
       <ProtectedRoute path="/purchase" component={PurchasePage} />
       <ProtectedRoute path="/rewards" component={RewardsPage} />
       <ProtectedRoute path="/subscriptions" component={SubscriptionPage} />
       <ProtectedRoute path="/support" component={SupportPage} />
       <ProtectedRoute path="/admin" component={AdminPage} />
-      <Route path="/home" component={Home} />
+      <ProtectedRoute path="/profile" component={ProfilePage} />
       <Route path="/auth" component={AuthPage} />
+      <Route path="/leaderboard" component={Leaderboard} />
       <Route path="/forgot-password" component={ForgotPasswordPage} />
       <Route path="/reset-password" component={ResetPasswordPage} />
       <Route path="/privacy-policy" component={PrivacyPolicyPage} />
       <Route path="/terms-of-service" component={TermsOfServicePage} />
+      <Route path="/about-us" component={AboutUsPage} />
+      <Route path="/cookie-policy" component={CookiePolicyPage} />
+      <Route path="/howToBet" component={HowToBetPage} />
+      <Route path="/contact-us" component={ContactUsPage} />
       <Route component={NotFound} />
     </Switch>
   );
@@ -64,6 +74,8 @@ function App() {
         <AuthProvider>
           <BanNotification />
           <Router />
+          {/* <Footer /> */}
+
           <Toaster />
         </AuthProvider>
       </HelmetProvider>

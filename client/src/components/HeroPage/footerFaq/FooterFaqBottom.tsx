@@ -17,12 +17,12 @@ const FooterFaqBottom: React.FC = () => {
     {
       question: "Popular events and sports news",
       answers: [
-        { text: "Slots", link: "" },
-        { text: "Live Casino", link: "" },
-        { text: "Registration", link: "" },
-        { text: "Special Offers and Bonuses", link: "" },
-        { text: "Promo Code Store", link: "" },
-        { text: "First Deposit Bonus", link: "" },
+        { text: "Casino Blackjack", link: "" },
+        { text: "Lucky Plinko", link: "" },
+        { text: "VIP Roulette", link: "" },
+        { text: "Lucky Slots", link: "" },
+        { text: "Dice", link: "" },
+        { text: "Crash", link: "" },
       ],
     },
   ];

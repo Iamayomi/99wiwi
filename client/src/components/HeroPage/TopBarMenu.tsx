@@ -1,65 +1,59 @@
-import React, { useState } from "react";
-import { Link } from "wouter";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useEffect, useState } from "react";
+import { FaChevronDown } from "react-icons/fa";
 import logo from "../../logo.png";
+import { Link } from "wouter";
+
+// Real-time clock component
+const Clock: React.FC = () => {
+  const [time, setTime] = useState<string>("");
+
+  useEffect(() => {
+    const updateTime = () => {
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, "0");
+      const minutes = String(now.getMinutes()).padStart(2, "0");
+      setTime(`${hours}:${minutes}`);
+    };
+
+    updateTime();
+    const interval = setInterval(updateTime, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return <span className="lg:block hidden text-[14px]">{time}</span>;
+};
 
 const TopBarMenu: React.FC = () => {
-  const [language, setLanguage] = useState("en");
-
   return (
-    <>
-      {/* Desktop Topbar Menu */}
-      <div className="hidden xl:block bg-[#212121] z-[100]">
-        <div className="container flex items-center justify-between px-4 py-3">
-          <Link href="/" className="flex items-center">
-            <img className="w-24" src={logo} alt="99wiwi Logo" />
+    <div className="bg-[#212121] z-[100]">
+      <div className="max-w-screen-xl mx-auto flex items-center justify-between px-4">
+        {/* First Group: Logo */}
+        <div className="flex items-center">
+          <Link to="/" className="flex-shrink-0">
+            <img className="w-24 xl:w-28" src={logo} alt="Logo" />
           </Link>
-          <div className="flex items-center gap-4">
-            <Select value={language} onValueChange={setLanguage}>
-              <SelectTrigger className="w-[120px] bg-[#1E1E2D] border-gray-700 text-white">
-                <SelectValue placeholder="Language" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="en">English</SelectItem>
-                <SelectItem value="es">Spanish</SelectItem>
-                <SelectItem value="fr">French</SelectItem>
-                <SelectItem value="de">German</SelectItem>
-                <SelectItem value="pt">Portuguese</SelectItem>
-              </SelectContent>
-            </Select>
-            <Link href="/auth">
-              <div className="px-4 py-2 text-[15px] text-white bg-[#CF2728] hover:bg-[#e94848] rounded-sm cursor-pointer transition-all">Get Started</div>
-            </Link>
-          </div>
         </div>
-      </div>
 
-      {/* Mobile Menu */}
-      <div className="xl:hidden bg-[#212121] px-4 py-3">
-        <div className="container flex items-center justify-between">
-          <Link href="/" className="flex items-center">
-            <img src={logo} className="w-[70px]" alt="99wiwi Logo" />
-          </Link>
-          <div className="flex items-center gap-3">
-            <Select value={language} onValueChange={setLanguage}>
-              <SelectTrigger className="w-[100px] bg-[#1E1E2D] border-gray-700 text-white text-xs">
-                <SelectValue placeholder="Language" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="en">English</SelectItem>
-                <SelectItem value="es">Spanish</SelectItem>
-                <SelectItem value="fr">French</SelectItem>
-                <SelectItem value="de">German</SelectItem>
-                <SelectItem value="pt">Portuguese</SelectItem>
-              </SelectContent>
-            </Select>
-            <Link href="/auth">
-              <div className="px-4 py-2 text-xs text-white bg-[#CF2728] hover:bg-[#e94848] rounded-sm cursor-pointer transition-all">Get Started</div>
-            </Link>
+        {/* Second Group: Clock, Language, Button */}
+        <div className="flex items-center gap-5">
+          {/* Real-time Clock */}
+          <Clock />
+
+          {/* Language Selector */}
+          <div className="lg:flex hidden items-center gap-1 text-[14px] cursor-pointer hover:text-gray-300">
+            <span>EN</span>
+            <FaChevronDown size={15} />
           </div>
+
+          {/* Button */}
+          <Link to="/auth" className="start">
+            <div className="px-4 py-2 text-[15px] text-white bg-[#CF2728] hover:bg-[#4d4c4c] rounded-sm cursor-pointer transition-all">
+              Get started
+            </div>
+          </Link>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

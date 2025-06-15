@@ -25,7 +25,7 @@ const LiveCard: React.FC<LiveCardProps> = ({
           alt={name}
           className="absolute -right-10 -bottom-5"
         />
-        <div className="uppercase font-medium mb-6 relative bg-black/30 rounded-lg">
+        <div className="uppercase font-medium mb-6 relative bg-black/30 rounded-lg px-1">
           {name}
         </div>
         {/* <button
