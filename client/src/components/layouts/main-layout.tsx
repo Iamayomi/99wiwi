@@ -119,10 +119,9 @@ export default function MainLayout({ children }: MainLayoutProps) {
               <div className="flex items-center gap-2">
                 {user && (
                   <div className="text-sm font-medium mr-2">
-                    {formatCurrency(user.balance)}
+                    Balance : {formatCurrency(user.balance)}
                   </div>
                 )}
-
                 <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
                   <SheetTrigger asChild>
                     <Button variant="ghost" size="icon">
@@ -153,7 +152,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                             <div>
                               <div className="font-medium">{user.username}</div>
                               <div className="text-sm text-muted-foreground">
-                                Balance: {formatCurrency(user.balance)}
+                                Balance : {formatCurrency(user.balance)}
                               </div>
                             </div>
                           </div>
@@ -382,7 +381,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                       </div>
                     </div>
                     <div className="text-xs font-medium">
-                      {formatCurrency(user.balance)}
+                      Balance : {formatCurrency(user.balance)}
                     </div>
                   </div>
 
@@ -407,7 +406,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                 <div className="ml-auto flex items-center gap-2">
                   {user && (
                     <div className="text-sm font-medium">
-                      {formatCurrency(user.balance)}
+                      Balance : {formatCurrency(user.balance)}
                     </div>
                   )}
                 </div>

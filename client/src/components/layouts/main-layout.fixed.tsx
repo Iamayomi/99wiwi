@@ -118,6 +118,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
               <div className="flex items-center gap-2">
                 {user && (
                   <div className="text-sm font-medium mr-2">
+                    Balance 
                     {formatCurrency(user.balance)}
                   </div>
                 )}
@@ -379,6 +380,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                       </div>
                     </div>
                     <div className="text-xs font-medium">
+                      Balance 
                       {formatCurrency(user.balance)}
                     </div>
                   </div>
@@ -407,6 +409,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                 <div className="ml-auto flex items-center gap-2">
                   {user && (
                     <div className="text-sm font-medium">
+                      Balance 
                       {formatCurrency(user.balance)}
                     </div>
                   )}
