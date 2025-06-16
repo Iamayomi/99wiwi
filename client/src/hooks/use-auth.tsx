@@ -43,7 +43,7 @@ const AuthContext = createContext<AuthContextType | null>(null);
 // Provider
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
-  const [, setLocation] = useLocation(); // ✅ wouter hook for redirect
+  const [_, setLocation] = useLocation(); // ✅ wouter hook for redirect
 
   const {
     data: user,
@@ -66,7 +66,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         title: "Login successful",
         description: `Welcome back, ${data.user.username}!`,
       });
-      setLocation("/profile"); // ✅ Redirect to profile
+
+      // ✅ Redirect to /admin if isAdmin === true, else /profile
+      if (data.user.isAdmin) {
+        setLocation("/admin");
+      } else {
+        setLocation("/");
+      }
     },
     onError: (error) => {
       toast({
@@ -89,7 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         title: "Registration successful",
         description: `Welcome to 99wiwi Casino, ${data.user.username}!`,
       });
-      setLocation("/profile"); // ✅ Redirect after registration
+      setLocation("/profile");
     },
     onError: (error) => {
       toast({
@@ -110,7 +116,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         title: "Logged out",
         description: "You have been successfully logged out",
       });
-      setLocation("/"); // ✅ Optional redirect after logout
+      setLocation("/");
     },
     onError: (error) => {
       toast({

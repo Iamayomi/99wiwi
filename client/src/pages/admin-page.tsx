@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/use-auth";
-import { Redirect, useLocation } from "wouter";
-// import MainLayout from "@/components/layouts/main-layout";
+import { Redirect, Link, useLocation } from "wouter";
+import MainLayout from "@/components/layouts/main-layout";
 import {
   Card as UICard,
   CardContent,
@@ -74,7 +74,7 @@ import {
   CoinsIcon,
   History,
   Ban,
-  BadgeCheck,
+  Menu,
   ShieldAlert,
   Info,
   Coins,
@@ -90,10 +90,11 @@ import {
   Users,
   Key,
   Lock,
+  LogOut,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { formatCurrency } from "@/lib/game-utils";
-import AdminLayout from "@/components/layouts/admin-layout";
+import logo from "../logo.png";
 
 // Define types for ban appeals
 type BanAppeal = {
@@ -3619,188 +3620,236 @@ function PasswordsTab() {
   );
 }
 
+// export default function AdminPage() {
+//   const { user } = useAuth();
+//   const [activeTab, setActiveTab] = useState("analytics");
+
+//   if (!user) return <Redirect to="/auth" />;
+//   if (!user.isAdmin) return <Redirect to="/" />;
+
+//   const isOwner = user.isOwner;
+
+//   const sidebarItems = [
+//     { key: "analytics", label: "Analytics", icon: BarChart3 },
+//     { key: "users", label: "Users", icon: UserCog },
+//     { key: "transactions", label: "Transactions", icon: History },
+//     { key: "announcements", label: "Announcements", icon: Megaphone },
+//     { key: "support", label: "Support", icon: LifeBuoy },
+//     { key: "ban-appeals", label: "Ban Appeals", icon: MessagesSquare },
+//     { key: "coins", label: "Coins", icon: CoinsIcon },
+//     { key: "bonuses", label: "Bonuses", icon: Gift },
+//     { key: "gameconfig", label: "Game Config", icon: Settings },
+//     { key: "subscriptions", label: "Subscriptions", icon: Crown },
+//     { key: "passwords", label: "Passwords", icon: Lock },
+//   ];
+
+//   const renderTabContent = () => {
+//     switch (activeTab) {
+//       case "analytics":
+//         return <AnalyticsTab />;
+//       case "users":
+//         return <UsersTab />;
+//       case "coins":
+//         return <CoinsTab />;
+//       case "bonuses":
+//         return <BonusesTab />;
+//       case "announcements":
+//         return <AnnouncementsTab />;
+//       case "gameconfig":
+//         return <GameConfigTab />;
+//       case "support":
+//         return <SupportTab />;
+//       case "subscriptions":
+//         return <SubscriptionsTab />;
+//       case "ban-appeals":
+//         return <BanAppealsTab />;
+//       case "passwords":
+//         return <PasswordsTab />;
+//       case "transactions":
+//         return (
+//           <div className="text-center p-12 text-muted-foreground">
+//             <h3 className="text-lg font-medium mb-2">Coming Soon</h3>
+//             <p>Transaction management features will be available soon.</p>
+//           </div>
+//         );
+//       default:
+//         return null;
+//     }
+//   };
+
+//   return (
+//     <div className="flex min-h-screen bg-black">
+//       {/* Sidebar */}
+//       <aside className="w-64 h-screen fixed top-0 left-0 bg-black shadow-md p-6 space-y-6 border-r-2 overflow-y-auto">
+//         <div>
+//           <Link to="/">
+//             <img src={logo} alt="Logo" className="h-20 w-auto" />
+//           </Link>
+
+//           <h2 className="text-xl font-bold">Admin Panel</h2>
+//           <p className="text-sm text-muted-foreground">Manage system settings</p>
+//           {!isOwner && <p className="text-xs text-amber-500 mt-2">Some tabs are only for owners</p>}
+//         </div>
+
+//         <nav className="space-y-2 ">
+//           {sidebarItems.map(({ key, label, icon: Icon }) => (
+//             <button
+//               key={key}
+//               onClick={() => setActiveTab(key)}
+//               className={`w-full flex items-center gap-2 px-4 py-2 rounded-md text-left text-sm font-medium
+//         text-gray-400 hover:bg-white/10
+//         ${activeTab === key ? "bg-purple-900/20 text-purple-600 " : ""}
+//       `}>
+//               <Icon className={`h-4 w-4 hover:text-white ${activeTab === key ? "text-purple-600" : " text-gray-400"}`} />
+//               {label}
+//             </button>
+//           ))}
+//         </nav>
+//       </aside>
+
+//       {/* Main Content */}
+//       <main className="flex-1 p-8 pl-80">{renderTabContent()}</main>
+//     </div>
+//   );
+// }
+
 export default function AdminPage() {
-  const { user } = useAuth();
-  const [, navigate] = useLocation();
+  // const { user } = useAuth();
+  const { user, logoutMutation } = useAuth();
 
-  // Access check - redirect if not admin
-  if (!user) {
-    return <Redirect to="/auth" />;
-  }
+  const [activeTab, setActiveTab] = useState("analytics");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  if (!user.isAdmin) {
-    return <Redirect to="/" />;
-  }
+  if (!user) return <Redirect to="/auth" />;
+  if (!user.isAdmin) return <Redirect to="/" />;
 
-  // Check if user is an owner (used to restrict certain tabs)
   const isOwner = user.isOwner;
 
+  const sidebarItems = [
+    { key: "analytics", label: "Analytics", icon: BarChart3 },
+    { key: "users", label: "Users", icon: UserCog },
+    { key: "transactions", label: "Transactions", icon: History },
+    { key: "announcements", label: "Announcements", icon: Megaphone },
+    { key: "support", label: "Support", icon: LifeBuoy },
+    { key: "ban-appeals", label: "Ban Appeals", icon: MessagesSquare },
+    { key: "coins", label: "Coins", icon: CoinsIcon },
+    { key: "bonuses", label: "Bonuses", icon: Gift },
+    { key: "gameconfig", label: "Game Config", icon: Settings },
+    { key: "subscriptions", label: "Subscriptions", icon: Crown },
+    { key: "passwords", label: "Passwords", icon: Lock },
+  ];
+
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case "analytics":
+        return <AnalyticsTab />;
+      case "users":
+        return <UsersTab />;
+      case "coins":
+        return <CoinsTab />;
+      case "bonuses":
+        return <BonusesTab />;
+      case "announcements":
+        return <AnnouncementsTab />;
+      case "gameconfig":
+        return <GameConfigTab />;
+      case "support":
+        return <SupportTab />;
+      case "subscriptions":
+        return <SubscriptionsTab />;
+      case "ban-appeals":
+        return <BanAppealsTab />;
+      case "passwords":
+        return <PasswordsTab />;
+      case "transactions":
+        return (
+          <div className="text-center p-12 text-muted-foreground">
+            <h3 className="text-lg font-medium mb-2">Coming Soon</h3>
+            <p>Transaction management features will be available soon.</p>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
+  const handleLogout = () => {
+    logoutMutation.mutate();
+  };
+
   return (
-    <AdminLayout>
-      <div className="container mx-auto py-8 px-4">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Admin Panel</h1>
-          <p className="text-muted-foreground">
-            Manage users, adjust balances, and monitor system activity
+    <div className="flex flex-col md:flex-row min-h-screen bg-black">
+      {/* Mobile Toggle Button */}
+      <div className="md:hidden p-4 flex items-center justify-between bg-black border-b border-white/10">
+        <button
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          className="text-white"
+        >
+          <Menu className="h-6 w-6" />
+        </button>
+        <img src={logo} alt="Logo" className="h-10" />
+      </div>
+
+      {/* Sidebar */}
+      <aside
+        className={`
+          fixed md:static top-0 left-0 h-screen z-40 bg-black border-r-2 shadow-md p-6 w-64 overflow-y-auto
+          transform transition-transform duration-300 ease-in-out
+          ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} 
+          md:translate-x-0
+        `}
+      >
+        <div>
+          <img src={logo} alt="Logo" className="h-20 w-auto" />
+          <h2 className="text-xl font-bold text-white">Admin Panel</h2>
+          <p className="text-sm text-muted-foreground">
+            Manage system settings
           </p>
           {!isOwner && (
             <p className="text-xs text-amber-500 mt-2">
-              Some tabs are only accessible to owners
+              Some tabs are only for owners
             </p>
           )}
         </div>
 
-        <Tabs defaultValue="analytics" className="w-full">
-          <div className="mb-6 overflow-x-auto pb-2">
-            <TabsList className="w-auto inline-flex flex-nowrap">
-              <TabsTrigger
-                value="analytics"
-                className="flex items-center whitespace-nowrap"
-              >
-                <BarChart3 className="h-4 w-4 mr-2" />
-                Analytics
-              </TabsTrigger>
-              <TabsTrigger
-                value="users"
-                className="flex items-center whitespace-nowrap"
-              >
-                <UserCog className="h-4 w-4 mr-2" />
-                Users
-              </TabsTrigger>
-              {isOwner && (
-                <TabsTrigger
-                  value="coins"
-                  className="flex items-center whitespace-nowrap"
-                >
-                  <CoinsIcon className="h-4 w-4 mr-2" />
-                  Coins
-                </TabsTrigger>
-              )}
-              <TabsTrigger
-                value="transactions"
-                className="flex items-center whitespace-nowrap"
-              >
-                <History className="h-4 w-4 mr-2" />
-                Transactions
-              </TabsTrigger>
-              {isOwner && (
-                <TabsTrigger
-                  value="bonuses"
-                  className="flex items-center whitespace-nowrap"
-                >
-                  <Gift className="h-4 w-4 mr-2" />
-                  Bonuses
-                </TabsTrigger>
-              )}
-              <TabsTrigger
-                value="announcements"
-                className="flex items-center whitespace-nowrap"
-              >
-                <Megaphone className="h-4 w-4 mr-2" />
-                Announcements
-              </TabsTrigger>
-              {isOwner && (
-                <TabsTrigger
-                  value="gameconfig"
-                  className="flex items-center whitespace-nowrap"
-                >
-                  <Settings className="h-4 w-4 mr-2" />
-                  Game Config
-                </TabsTrigger>
-              )}
-              <TabsTrigger
-                value="support"
-                className="flex items-center whitespace-nowrap"
-              >
-                <LifeBuoy className="h-4 w-4 mr-2" />
-                Support
-              </TabsTrigger>
-              {isOwner && (
-                <TabsTrigger
-                  value="subscriptions"
-                  className="flex items-center whitespace-nowrap"
-                >
-                  <Crown className="h-4 w-4 mr-2" />
-                  Subscriptions
-                </TabsTrigger>
-              )}
-              <TabsTrigger
-                value="ban-appeals"
-                className="flex items-center whitespace-nowrap"
-              >
-                <MessagesSquare className="h-4 w-4 mr-2" />
-                Ban Appeals
-              </TabsTrigger>
-              {isOwner && (
-                <TabsTrigger
-                  value="passwords"
-                  className="flex items-center whitespace-nowrap"
-                >
-                  <Lock className="h-4 w-4 mr-2" />
-                  Passwords
-                </TabsTrigger>
-              )}
-            </TabsList>
-          </div>
+        <nav className="mt-6 space-y-2">
+          {sidebarItems.map(({ key, label, icon: Icon }) => (
+            <button
+              key={key}
+              onClick={() => {
+                setActiveTab(key);
+                setSidebarOpen(false); // Close on mobile click
+              }}
+              className={`w-full flex items-center gap-2 px-4 py-2 rounded-md text-left text-sm font-medium 
+                text-gray-400 hover:bg-white/10
+                ${activeTab === key ? "bg-purple-900/20 text-purple-600" : ""}
+              `}
+            >
+              <Icon
+                className={`h-4 w-4 ${
+                  activeTab === key ? "text-purple-600" : "text-gray-400"
+                }`}
+              />
+              {label}
+            </button>
+          ))}
+        </nav>
+        <div className="py-4">
+          <Button
+            variant="outline"
+            className="w-full justify-start"
+            onClick={handleLogout}
+          >
+            <LogOut size={18} className="mr-2" />
+            Logout
+          </Button>
+        </div>
+      </aside>
 
-          <TabsContent value="analytics">
-            <AnalyticsTab />
-          </TabsContent>
-
-          <TabsContent value="users">
-            <UsersTab />
-          </TabsContent>
-
-          {isOwner && (
-            <TabsContent value="coins">
-              <CoinsTab />
-            </TabsContent>
-          )}
-
-          <TabsContent value="transactions">
-            <div className="text-center p-12 text-muted-foreground">
-              <h3 className="text-lg font-medium mb-2">Coming Soon</h3>
-              <p>Transaction management features will be available soon.</p>
-            </div>
-          </TabsContent>
-
-          {isOwner && (
-            <TabsContent value="bonuses">
-              <BonusesTab />
-            </TabsContent>
-          )}
-
-          <TabsContent value="announcements">
-            <AnnouncementsTab />
-          </TabsContent>
-
-          {isOwner && (
-            <TabsContent value="gameconfig">
-              <GameConfigTab />
-            </TabsContent>
-          )}
-
-          <TabsContent value="support">
-            <SupportTab />
-          </TabsContent>
-
-          {isOwner && (
-            <TabsContent value="subscriptions">
-              <SubscriptionsTab />
-            </TabsContent>
-          )}
-
-          <TabsContent value="ban-appeals">
-            <BanAppealsTab />
-          </TabsContent>
-
-          {isOwner && (
-            <TabsContent value="passwords">
-              <PasswordsTab />
-            </TabsContent>
-          )}
-        </Tabs>
-      </div>
-    </AdminLayout>
+      {/* Main Content */}
+      <main className="flex-1 p-6 ml-0 md:ml-15 mt-[72px] md:mt-0 overflow-y-auto h-screen">
+        {renderTabContent()}
+      </main>
+    </div>
   );
 }

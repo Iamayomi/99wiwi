@@ -33,7 +33,7 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 import logo from "../../logo.png";
-import { FaUserCircle } from "react-icons/fa";
+import { FaUserAlt } from "react-icons/fa";
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -300,7 +300,6 @@ export default function MainLayout({ children }: MainLayoutProps) {
               <div className="flex items-center gap-2">
                 {user && (
                   <div className="text-sm font-medium">
-                    Balance:
                     {formatCurrency(user.balance)}
                   </div>
                 )}
@@ -439,7 +438,6 @@ export default function MainLayout({ children }: MainLayoutProps) {
                       </div>
                     </div>
                     <div className="text-xs font-medium">
-                      Balance:
                       {formatCurrency(user.balance)}
                     </div>
                   </div>
@@ -472,13 +470,11 @@ export default function MainLayout({ children }: MainLayoutProps) {
                     </div>
                   )}
                 </div>
-
-                <Link to="/profile" className="start">
-                  <div className="lg:flex relative hidden  text-white justify-center items-center rounded-[5px] bg-[#2E2E2E] px-[2px] py-[12px] h-full w-auto min-w-[45px]">
-                    <FaUserCircle
-                      size={20}
-                      className="cursor-pointer lg:block hidden hover:text-gray-300"
-                    />
+                
+                {/* Profile */}
+                <Link href="/profile">
+                  <div className="lg:flex relative hidden ml-5  text-white justify-center items-center rounded-[5px] bg-[#2E2E2E] px-[2px] py-[12px] h-full w-auto min-w-[45px]">
+                    <FaUserAlt />
                     <span className="absolute top-[10%] right-[9%] bg-green-500 rounded-full p-[4px]"></span>
                   </div>
                 </Link>

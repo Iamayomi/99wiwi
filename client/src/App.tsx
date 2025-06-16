@@ -32,16 +32,13 @@ import AboutUsPage from "./pages/about-us";
 import CookiePolicyPage from "./pages/cookie-policy";
 import HowToBetPage from "./pages/howToBet";
 import ContactUsPage from "./pages/contact-us";
+import Footer from "./components/HeroPage/Footer";
 import ProfilePage from "./pages/profilePage";
 
 function Router() {
   return (
     <Switch>
-      <ConditionalRoute
-        path="/"
-        loggedInComponent={DashboardPage}
-        loggedOutComponent={Home}
-      />
+      <ConditionalRoute path="/" loggedInComponent={DashboardPage} loggedOutComponent={Home} />
       <ProtectedRoute path="/slots" component={SlotsPage} />
       <ProtectedRoute path="/dice" component={DicePage} />
       <ProtectedRoute path="/crash" component={CrashPage} />
@@ -54,7 +51,6 @@ function Router() {
       <ProtectedRoute path="/subscriptions" component={SubscriptionPage} />
       <ProtectedRoute path="/support" component={SupportPage} />
       <ProtectedRoute path="/admin" component={AdminPage} />
-      <ProtectedRoute path="/admins" component={AdminPage} />
       <ProtectedRoute path="/profile" component={ProfilePage} />
       <Route path="/auth" component={AuthPage} />
       <Route path="/leaderboard" component={Leaderboard} />
