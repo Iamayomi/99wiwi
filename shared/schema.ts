@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, decimal } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, decimal, jsonb } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -93,6 +93,56 @@ export const banAppeals = pgTable("ban_appeals", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+export const branding = pgTable("branding", {
+  id: serial("id").primaryKey(),
+  name: text("name").default("99wiwi"),
+  color: text("color").default("#03346E"),
+  logo: text("logo").default("/images/logo.png"),
+  favicon: text("favicon").default("/images/favicon"),
+  font: jsonb("font").default({ family: "sans-serif", size: "16px" }),
+  language: text("language").default("en-US"),
+  timezone: text("timezone").default("UTC"),
+  aboutUs: text("about_us").default(""),
+  socialMedia: jsonb("social_media").default({
+    facebook: "",
+    twitter: "",
+    instagram: "",
+    linkedin: "",
+    youtube: "",
+  }),
+  copyright: text("copyright").default("Copyright@. Online Gaming.com, All Rights Reserved"),
+  quickLinks: text("quick_links").default(""),
+  legalPages: text("legal_pages").default(""),
+  adminSettings: jsonb("admin_settings").default({
+    paymentGateway: "Paystack",
+    currency: "NGN",
+    dailyTransactionLimit: "1000",
+    maximumUsers: "100000",
+    defaultUserRole: "player",
+    notifications: {
+      enableEmail: true,
+      enableSMS: false,
+    },
+    liveChat: {
+      enabled: true,
+      link: "",
+    },
+    support: {
+      email: "",
+      phone: "",
+    },
+    adminAccount: {
+      email: "",
+      password: "",
+    },
+    userVerification: "",
+  }),
+  predefinedBets: text("predefined_bets").array().default([]),
+  widgetBlocks: text("widget_blocks").array().default([]),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
@@ -121,6 +171,12 @@ export const insertLoginRewardSchema = createInsertSchema(loginRewards).omit({
 });
 
 export const insertSubscriptionSchema = createInsertSchema(subscriptions).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertBranhingSchema = createInsertSchema(branding).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
@@ -260,6 +316,15 @@ export type CoinPackage = z.infer<typeof coinPackageSchema>;
 export type CreatePaymentIntent = z.infer<typeof createPaymentIntentSchema>;
 export type SubscriptionPlan = z.infer<typeof subscriptionPlanSchema>;
 export type ManageSubscription = z.infer<typeof manageSubscriptionSchema>;
+export type LeaderBoard = {
+  userId: string;
+  username?: string;
+  totalGamesPlayed: number;
+  totalWins: number;
+  totalLosses: number;
+  totalEarnings: number;
+  totalBets: number;
+};
 
 // Game related schemas
 export const betSchema = z.object({

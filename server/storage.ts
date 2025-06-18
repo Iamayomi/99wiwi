@@ -39,6 +39,7 @@ import {
   SubscriptionPlan,
   PasswordResetToken,
   InsertPasswordResetToken,
+  LeaderBoard,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, asc, sql, like, and, or, isNull } from "drizzle-orm";
@@ -71,6 +72,10 @@ export interface IStorage {
   // Transaction operations
   getUserTransactions(userId: number, limit?: number): Promise<Transaction[]>;
   createTransaction(transaction: InsertTransaction): Promise<Transaction>;
+  getAllTransactions(): Promise<Transaction[]>;
+
+  // LeaderBoard operation
+  getLeaderboard(): Promise<LeaderBoard[]>;
 
   // Login reward operations
   createLoginReward(reward: InsertLoginReward): Promise<LoginReward>;
@@ -730,6 +735,73 @@ export class DatabaseStorage implements IStorage {
       bets: betsMap.get(date) || 0,
       wins: winsMap.get(date) || 0,
     }));
+  }
+
+  /**
+   * Get all transactions from the database
+   * @returns Promise<{ transactions: Transaction[]; count: number }> - Array of all transaction records and total count
+   */
+  async getAllTransactions(): Promise<Transaction[]> {
+    try {
+      const result = await db
+        .select()
+        .from(transactions)
+        .where(sql`"game_type" IS NOT NULL`)
+        .orderBy(sql`"timestamp" DESC`);
+
+      if (result.length === 0) {
+        console.warn("No transactions found with valid game_type");
+      }
+
+      return result;
+    } catch (error) {
+      console.error("Error fetching all transactions:", error);
+      throw new Error("Failed to retrieve transactions");
+    }
+  }
+
+  /**
+   * Get leaderboard data for top 10 players
+   * @returns Promise<Leaderboard[]> - Array of top 10 players with metrics
+   */
+  async getLeaderboard(): Promise<LeaderBoard[]> {
+    try {
+      const result = await db
+        .select({
+          userId: transactions.userId,
+          username: users.username,
+          totalGamesPlayed: sql<number>`COUNT(*)`,
+          totalWins: sql<number>`SUM(CASE WHEN ${transactions.isWin} = true THEN 1 ELSE 0 END)`,
+          totalLosses: sql<number>`SUM(CASE WHEN ${transactions.isWin} = false THEN 1 ELSE 0 END)`,
+          totalEarnings: sql<number>`SUM(CASE WHEN ${transactions.isWin} = true THEN ${transactions.payout} ELSE 0 END) - SUM(${transactions.amount})`,
+          totalBets: sql<number>`SUM(${transactions.amount})`,
+        })
+        .from(transactions)
+        .leftJoin(users, sql`${users.id} = ${transactions.userId}`)
+        .where(sql`${transactions.gameType} IS NOT NULL`)
+        .groupBy(transactions.userId, users.username)
+        .orderBy(sql`SUM(CASE WHEN ${transactions.isWin} = true THEN 1 ELSE 0 END) DESC`, sql`SUM(${transactions.amount}) DESC`)
+        .limit(10);
+
+      const leaderboard: LeaderBoard[] = result.map((row) => ({
+        userId: String(row.userId),
+        username: row.username || undefined,
+        totalGamesPlayed: Number(row.totalGamesPlayed),
+        totalWins: Number(row.totalWins),
+        totalLosses: Number(row.totalLosses),
+        totalEarnings: Number(row.totalEarnings),
+        totalBets: Number(row.totalBets),
+      }));
+
+      if (leaderboard.length === 0) {
+        console.warn("No leaderboard data generated; no valid transactions found");
+      }
+
+      return leaderboard;
+    } catch (error) {
+      console.error("Error fetching leaderboard:", error);
+      throw new Error("Failed to retrieve leaderboard");
+    }
   }
 
   async getSubscriptionStats(): Promise<{ tier: string; count: number }[]> {

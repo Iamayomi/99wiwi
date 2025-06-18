@@ -9,9 +9,9 @@ import { setupAdminRoutes } from "./admin";
 import { setupRewardRoutes } from "./rewards";
 import { setupSupportRoutes } from "./support";
 import { setupPasswordResetRoutes } from "./reset-password";
-import { playSlots, playDice, startCrash, crashCashout, getTransactions, playRoulette, startBlackjack, blackjackAction, playPlinko } from "./games";
+import { playSlots, playDice, startCrash, crashCashout, getTransactions, playRoulette, startBlackjack, blackjackAction, playPlinko, getBettingOverview } from "./games";
 import Stripe from "stripe";
-import { createPaymentIntentSchema, CoinPackage, subscriptionPlanSchema, manageSubscriptionSchema, SubscriptionPlan, banAppealSchema } from "@shared/schema";
+import { createPaymentIntentSchema, CoinPackage, subscriptionPlanSchema, manageSubscriptionSchema, SubscriptionPlan, banAppealSchema, LeaderBoard } from "@shared/schema";
 import { z } from "zod";
 
 // Define our coin packages
@@ -225,6 +225,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Set up password reset routes
   setupPasswordResetRoutes(app);
+
+  // leadboard endpoint
+  app.get("/api/games/leaderboard", async (req: Request, res: Response) => {
+    try {
+      const leaderboard = await storage.getLeaderboard();
+      res.status(200).json({ leaderboard });
+    } catch (error) {
+      console.error("Leaderboard error:", error);
+      res.status(500).json({ message: "Server error" });
+    }
+  });
 
   // Ban appeal endpoints
   app.get("/api/user/ban-status", banStatusMiddleware, async (req: Request, res: Response) => {
