@@ -316,18 +316,15 @@ export type CoinPackage = z.infer<typeof coinPackageSchema>;
 export type CreatePaymentIntent = z.infer<typeof createPaymentIntentSchema>;
 export type SubscriptionPlan = z.infer<typeof subscriptionPlanSchema>;
 export type ManageSubscription = z.infer<typeof manageSubscriptionSchema>;
-export type LeaderBoard =
-  // Record<K extends string | number | symbol, T> = { [P in K]: T; }
-
-  {
-    userId: string;
-    username?: string;
-    totalGamesPlayed: number;
-    totalWins: number;
-    totalLosses: number;
-    totalEarnings: number;
-    totalBets: number;
-  };
+export type LeaderBoard = {
+  userId: string;
+  username?: string | undefined;
+  totalGamesPlayed: number;
+  totalWins: number;
+  totalLosses: number;
+  totalEarnings: number;
+  totalBets: number;
+};
 export type InsertBranding = z.infer<typeof insertBrandingSchema>;
 export type Branding = typeof branding.$inferSelect;
 

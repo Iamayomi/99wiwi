@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import React, { useState, useEffect, useCallback } from "react";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
+// import { debounce } from "lodash";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/use-auth";
 import { Redirect, Link, useLocation } from "wouter";
-import MainLayout from "@/components/layouts/main-layout";
+
 import { Card as UICard, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -17,7 +18,6 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -33,6 +33,7 @@ import {
   CoinsIcon,
   History,
   Ban,
+  Trophy,
   Menu,
   ShieldAlert,
   Info,
@@ -49,6 +50,8 @@ import {
   Users,
   Key,
   Lock,
+  FileText,
+  Bell,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { formatCurrency } from "@/lib/game-utils";
@@ -2747,98 +2750,203 @@ function PasswordsTab() {
   );
 }
 
-// export default function AdminPage() {
-//   const { user } = useAuth();
-//   const [activeTab, setActiveTab] = useState("analytics");
+// Define interfaces for type safety
+interface LeaderboardEntry {
+  userId: string;
+  username: string;
+  totalGamesPlayed: number;
+  totalWins: number;
+  totalLosses: number;
+  currentScore: number;
+  totalEarnings: number;
+}
 
-//   if (!user) return <Redirect to="/auth" />;
-//   if (!user.isAdmin) return <Redirect to="/" />;
+interface BettingStats {
+  totalPlayers: number;
+  highestPlayer: {
+    userId: string;
+    totalBets: number;
+  };
+  averageRanking: number;
+}
 
-//   const isOwner = user.isOwner;
+interface OverviewStat {
+  name: string;
+  value: string | number;
+}
 
-//   const sidebarItems = [
-//     { key: "analytics", label: "Analytics", icon: BarChart3 },
-//     { key: "users", label: "Users", icon: UserCog },
-//     { key: "transactions", label: "Transactions", icon: History },
-//     { key: "announcements", label: "Announcements", icon: Megaphone },
-//     { key: "support", label: "Support", icon: LifeBuoy },
-//     { key: "ban-appeals", label: "Ban Appeals", icon: MessagesSquare },
-//     { key: "coins", label: "Coins", icon: CoinsIcon },
-//     { key: "bonuses", label: "Bonuses", icon: Gift },
-//     { key: "gameconfig", label: "Game Config", icon: Settings },
-//     { key: "subscriptions", label: "Subscriptions", icon: Crown },
-//     { key: "passwords", label: "Passwords", icon: Lock },
-//   ];
+// Transform JSON data into OverviewStat format
+const transformBettingStats = (data: BettingStats): OverviewStat[] => [
+  { name: "Total Players", value: data.totalPlayers },
+  { name: "Top Player", value: `${data.highestPlayer.userId} - ${data.highestPlayer.totalBets} bets` },
+  { name: "Average Ranking", value: data.averageRanking },
+];
 
-//   const renderTabContent = () => {
-//     switch (activeTab) {
-//       case "analytics":
-//         return <AnalyticsTab />;
-//       case "users":
-//         return <UsersTab />;
-//       case "coins":
-//         return <CoinsTab />;
-//       case "bonuses":
-//         return <BonusesTab />;
-//       case "announcements":
-//         return <AnnouncementsTab />;
-//       case "gameconfig":
-//         return <GameConfigTab />;
-//       case "support":
-//         return <SupportTab />;
-//       case "subscriptions":
-//         return <SubscriptionsTab />;
-//       case "ban-appeals":
-//         return <BanAppealsTab />;
-//       case "passwords":
-//         return <PasswordsTab />;
-//       case "transactions":
-//         return (
-//           <div className="text-center p-12 text-muted-foreground">
-//             <h3 className="text-lg font-medium mb-2">Coming Soon</h3>
-//             <p>Transaction management features will be available soon.</p>
-//           </div>
-//         );
-//       default:
-//         return null;
-//     }
-//   };
+// Component for the leaderboard tab
+function LeaderboardTab() {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [page, setPage] = useState(1);
+  const [isResetMonthlyDialogOpen, setIsResetMonthlyDialogOpen] = useState(false);
+  const [isResetWeeklyDialogOpen, setIsResetWeeklyDialogOpen] = useState(false);
+  const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
+  const [isNotificationDialogOpen, setIsNotificationDialogOpen] = useState(false);
 
-//   return (
-//     <div className="flex min-h-screen bg-black">
-//       {/* Sidebar */}
-//       <aside className="w-64 h-screen fixed top-0 left-0 bg-black shadow-md p-6 space-y-6 border-r-2 overflow-y-auto">
-//         <div>
-//           <Link to="/">
-//             <img src={logo} alt="Logo" className="h-20 w-auto" />
-//           </Link>
+  // Fetch overview stats
+  const {
+    data: rawStatsData,
+    isLoading: isStatsLoading,
+    error: statsError,
+  } = useQuery({
+    queryKey: ["/api/admin/betoverview"],
+    queryFn: async () => {
+      const res = await apiRequest("GET", "/api/admin/betoverview");
+      return await res.json();
+    },
+    // Remove mock data and enable query when API is available
+    enabled: true, // Enable this when you have a real API
+  });
+  const statsData = rawStatsData ? transformBettingStats(rawStatsData) : [];
 
-//           <h2 className="text-xl font-bold">Admin Panel</h2>
-//           <p className="text-sm text-muted-foreground">Manage system settings</p>
-//           {!isOwner && <p className="text-xs text-amber-500 mt-2">Some tabs are only for owners</p>}
-//         </div>
+  // Fetch leaderboard data
+  const {
+    data: leaderboardData,
+    isLoading: isLeaderboardLoading,
+    error: leaderboardError,
+  } = useQuery({
+    queryKey: ["/api/admin/leaderboard"],
+    queryFn: async () => {
+      const res = await apiRequest("GET", `/api/games/leaderboard`);
+      return await res.json();
+    },
+  });
 
-//         <nav className="space-y-2 ">
-//           {sidebarItems.map(({ key, label, icon: Icon }) => (
-//             <button
-//               key={key}
-//               onClick={() => setActiveTab(key)}
-//               className={`w-full flex items-center gap-2 px-4 py-2 rounded-md text-left text-sm font-medium
-//         text-gray-400 hover:bg-white/10
-//         ${activeTab === key ? "bg-purple-900/20 text-purple-600 " : ""}
-//       `}>
-//               <Icon className={`h-4 w-4 hover:text-white ${activeTab === key ? "text-purple-600" : " text-gray-400"}`} />
-//               {label}
-//             </button>
-//           ))}
-//         </nav>
-//       </aside>
+  // Pagination controls
+  const handleNextPage = () => {
+    if (leaderboardData && page < leaderboardData.pagination.totalPages) {
+      setPage(page + 1);
+    }
+  };
 
-//       {/* Main Content */}
-//       <main className="flex-1 p-8 pl-80">{renderTabContent()}</main>
-//     </div>
-//   );
-// }
+  const handlePrevPage = () => {
+    if (page > 1) {
+      setPage(page - 1);
+    }
+  };
+
+  // Leaderboard entries to render
+  const entriesToRender = leaderboardData || [];
+
+  if (leaderboardError || statsError) {
+    return (
+      <div className="text-center p-8">
+        <p className="text-red-500">Error loading data: {(leaderboardError || statsError)?.message || "Unknown error"}</p>
+        <Button
+          onClick={() => {
+            queryClient.refetchQueries({ queryKey: ["/api/games/leaderboard"] });
+            queryClient.refetchQueries({ queryKey: ["/api/admin/betoverview"] });
+          }}
+          className="mt-4">
+          <RefreshCw className="mr-2 h-4 w-4" />
+          Retry
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-6">
+      <h1 className="font-jua text-xl mb-2">Leaderboard Management</h1>
+      <div className="text-sm text-muted-foreground mb-6">Manage Global Leaderboard</div>
+
+      {/* Betting Overview */}
+      <div className="mb-6">
+        <div className="font-jua text-lg mb-2">Betting Overview</div>
+        {isStatsLoading ? (
+          <div className="flex justify-center p-4">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {statsData.map((item: OverviewStat, index: number) => (
+              <div key={index} className="bg-light_blue p-4 rounded-md border border-gray-500">
+                <div className="font-jua text-gray-500">{item.name}</div>
+                <div className="text-2xl font-bold">{item.value}</div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Leaderboard Table */}
+      <div className="mb-6">
+        <div className="font-jua text-lg mb-4">Leaderboard Table</div>
+        {isLeaderboardLoading ? (
+          <div className="flex justify-center p-8">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        ) : (
+          <>
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-dark text-white">
+                  <TableHead className="p-4 font-jua">Rank</TableHead>
+                  <TableHead className="p-4 font-jua">Player Name</TableHead>
+                  <TableHead className="p-4 font-jua">User ID</TableHead>
+                  <TableHead className="p-4 font-jua">Total Games Played</TableHead>
+                  <TableHead className="p-4 font-jua">Wins/Losses</TableHead>
+                  <TableHead className="p-4 font-jua">Points</TableHead>
+                  <TableHead className="p-4 font-jua text-center">Earnings</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {entriesToRender.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-8 text-white">
+                      No leaderboard entries found
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  entriesToRender.map((entry: LeaderboardEntry, index: number) => (
+                    <TableRow key={entry.userId} className={`${index % 2 ? "bg-light_blue" : ""} text-white hover:bg-dark_blue`}>
+                      <TableCell className="p-4">{index + 1 + (page - 1) * 10}</TableCell>
+                      <TableCell className="p-4">{entry.username}</TableCell>
+                      <TableCell className="p-4">{entry.userId}</TableCell>
+                      <TableCell className="p-4">{entry.totalGamesPlayed}</TableCell>
+                      <TableCell className="p-4">
+                        {entry.totalWins}/{entry.totalLosses}
+                      </TableCell>
+                      <TableCell className="p-4">{entry.currentScore}</TableCell>
+                      <TableCell className="p-4 text-center">{formatCurrency(entry.totalEarnings)}</TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+
+            {/* Pagination */}
+            {searchTerm.length < 2 && leaderboardData && leaderboardData.pagination && (
+              <div className="flex justify-between items-center mt-4">
+                <div className="text-sm text-muted-foreground">
+                  Showing page {page} of {leaderboardData.pagination.totalPages}
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={handlePrevPage} disabled={page === 1} aria-label="Previous page">
+                    Previous
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={handleNextPage} disabled={page >= leaderboardData.pagination.totalPages} aria-label="Next page">
+                    Next
+                  </Button>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export default function AdminPage() {
   const { user } = useAuth();
@@ -2859,6 +2967,7 @@ export default function AdminPage() {
     { key: "ban-appeals", label: "Ban Appeals", icon: MessagesSquare },
     { key: "coins", label: "Coins", icon: CoinsIcon },
     { key: "bonuses", label: "Bonuses", icon: Gift },
+    { key: "leaderboard-management", label: "leaderboard", icon: Trophy },
     { key: "gameconfig", label: "Game Config", icon: Settings },
     { key: "subscriptions", label: "Subscriptions", icon: Crown },
     { key: "passwords", label: "Passwords", icon: Lock },
@@ -2872,6 +2981,8 @@ export default function AdminPage() {
         return <UsersTab />;
       case "coins":
         return <CoinsTab />;
+      case "leaderboard-management":
+        return <LeaderboardTab />;
       case "bonuses":
         return <BonusesTab />;
       case "announcements":

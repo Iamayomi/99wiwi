@@ -1781,29 +1781,27 @@ export async function playPlinko(req: Request, res: Response) {
 
 export async function getBettingOverview(req: Request, res: Response) {
   try {
-    // const userId = req.user?.id;
-    // if (!userId) {
-    //   return res.status(401).json({ message: "Unauthorized" });
-    // }
-
-    // 1. Calculate total players
-    const allUsers = await storage.getAllUsers();
-    const totalPlayers = allUsers.length;
-
-    // 2. Get all transactions to find highest player
+    // 1. Get all transactions
     const allTransactions = await storage.getAllTransactions();
 
-    const userBets: { [userId: string]: number } = {};
+    // 2. Count distinct userIds from transactions to get total players
+    const uniqueUserIds = new Set(allTransactions.map((tx) => tx.userId));
+    const totalPlayers = uniqueUserIds.size;
 
+    // 3. Sum total bets per user
+    const userBets: { [userId: string]: number } = {};
     for (const tx of allTransactions) {
       userBets[tx.userId] = (userBets[tx.userId] || 0) + Number(tx.amount);
     }
+
+    // 4. Rank users by total bets
     const rankedUsers = Object.entries(userBets)
       .map(([userId, totalBets]) => ({ userId, totalBets }))
       .sort((a, b) => b.totalBets - a.totalBets);
+
     const highestPlayer = rankedUsers[0] || { userId: "unknown", totalBets: 0 };
 
-    // 3. Calculate average ranking based on total bets
+    // 5. Assign ranks
     let currentRank = 1;
     const ranks: { [userId: string]: number } = {};
     for (let i = 0; i < rankedUsers.length; i++) {
@@ -1812,10 +1810,11 @@ export async function getBettingOverview(req: Request, res: Response) {
       }
       ranks[rankedUsers[i].userId] = currentRank;
     }
+
     const totalRankSum = Object.values(ranks).reduce((sum, rank) => sum + rank, 0);
     const averageRanking = totalPlayers > 0 ? Math.round(totalRankSum / totalPlayers) : 0;
 
-    // Return overview
+    // Return final overview
     res.status(200).json({
       totalPlayers,
       highestPlayer: {

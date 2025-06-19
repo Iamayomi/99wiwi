@@ -23,3 +23,13 @@ Content-Type: application/json
 #### FETCH BRANDING
 GET http://localhost:8080/api/admin/branding
 Content-Type: application/json
+
+
+#### UPDATE BRANDING
+PUT http://localhost:8080/api/admin/branding
+Content-Type: application/json
+
+{
+   "name": "99w3w3",
+   "color": "#05566E"
+}

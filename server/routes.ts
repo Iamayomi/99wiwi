@@ -230,7 +230,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/games/leaderboard", async (req: Request, res: Response) => {
     try {
       const leaderboard = await storage.getLeaderboard();
-      res.status(200).json({ leaderboard });
+      res.status(200).json(leaderboard);
     } catch (error) {
       console.error("Leaderboard error:", error);
       res.status(500).json({ message: "Server error" });

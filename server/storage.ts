@@ -46,6 +46,7 @@ import {
 import { db } from "./db";
 import { eq, desc, asc, sql, like, and, or, isNull } from "drizzle-orm";
 import { AnyBuyerError } from "@stripe/stripe-js";
+import { User2Icon } from "lucide-react";
 
 // modify the interface with any CRUD methods
 // you might need
@@ -776,23 +777,25 @@ export class DatabaseStorage implements IStorage {
       const result = await db
         .select({
           userId: transactions.userId,
-          username: users.username,
           totalGamesPlayed: sql<number>`COUNT(*)`,
           totalWins: sql<number>`SUM(CASE WHEN ${transactions.isWin} = true THEN 1 ELSE 0 END)`,
           totalLosses: sql<number>`SUM(CASE WHEN ${transactions.isWin} = false THEN 1 ELSE 0 END)`,
-          totalEarnings: sql<number>`SUM(CASE WHEN ${transactions.isWin} = true THEN ${transactions.payout} ELSE 0 END) - SUM(${transactions.amount})`,
+          totalEarnings: sql<number>`
+          SUM(CASE WHEN ${transactions.isWin} = true THEN ${transactions.payout} ELSE 0 END)
+          - SUM(${transactions.amount})
+        `,
           totalBets: sql<number>`SUM(${transactions.amount})`,
         })
         .from(transactions)
-        .leftJoin(users, sql`${users.id} = ${transactions.userId}`)
+        .leftJoin(users, eq(users.id, transactions.userId)) // Correct join
         .where(sql`${transactions.gameType} IS NOT NULL`)
         .groupBy(transactions.userId, users.username)
         .orderBy(sql`SUM(CASE WHEN ${transactions.isWin} = true THEN 1 ELSE 0 END) DESC`, sql`SUM(${transactions.amount}) DESC`)
         .limit(10);
 
-      const leaderboard: LeaderBoard[] = result.map((row) => ({
+      const leaderboard: LeaderBoard[] = result.map((row: any) => ({
         userId: String(row.userId),
-        username: row.username || undefined,
+        username: row.username,
         totalGamesPlayed: Number(row.totalGamesPlayed),
         totalWins: Number(row.totalWins),
         totalLosses: Number(row.totalLosses),
