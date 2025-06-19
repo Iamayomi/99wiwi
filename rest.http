@@ -16,6 +16,10 @@ Content-Type: application/json
 GET http://localhost:8080/api/games/leaderboard
 Content-Type: application/json
 
-#### FETCH BETOVERVIEW
+#### FETCH BET OVERVIEW
 GET http://localhost:8080/api/admin/betoverview
+Content-Type: application/json
+
+#### FETCH BRANDING
+GET http://localhost:8080/api/admin/branding
 Content-Type: application/json

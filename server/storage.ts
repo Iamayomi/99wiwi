@@ -40,9 +40,12 @@ import {
   PasswordResetToken,
   InsertPasswordResetToken,
   LeaderBoard,
+  Branding,
+  branding,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, asc, sql, like, and, or, isNull } from "drizzle-orm";
+import { AnyBuyerError } from "@stripe/stripe-js";
 
 // modify the interface with any CRUD methods
 // you might need
@@ -73,6 +76,10 @@ export interface IStorage {
   getUserTransactions(userId: number, limit?: number): Promise<Transaction[]>;
   createTransaction(transaction: InsertTransaction): Promise<Transaction>;
   getAllTransactions(): Promise<Transaction[]>;
+
+  // Branding operations
+  getBranding(): Promise<Branding | any>;
+  updateBranding(updates: Partial<Branding>): Promise<Branding>;
 
   // LeaderBoard operation
   getLeaderboard(): Promise<LeaderBoard[]>;
@@ -802,6 +809,83 @@ export class DatabaseStorage implements IStorage {
       console.error("Error fetching leaderboard:", error);
       throw new Error("Failed to retrieve leaderboard");
     }
+  }
+
+  async getBranding(): Promise<Branding | any> {
+    const result = await db.select().from(branding);
+    let brandingData: any = result[0];
+
+    if (!brandingData) {
+      brandingData = {
+        name: "99wiwi",
+        color: "#03346E", // Example default color
+        logo: "/images/logo.png", // Example default logo
+        favicon: "/images/favicon.ico", // Example default favicon
+        font: {
+          family: "Arial, sans-serif", // Default font family
+          size: 14, // Default font size
+        },
+        aboutUs: `Website offers an exciting platform where players can compete in
+          real-time across a variety of games like Chess, Connect Four, and
+          Tic Tac Toe. Featuring both single-player and multiplayer modes,
+          users can challenge opponents, place bets, and win real money in a
+          secure and seamless environment.`,
+        socialMedia: {
+          facebook: "",
+          twitter: "",
+          instagram: "",
+        },
+        language: "en",
+        timezone: "UTC",
+        copyright: "Copyright@. Online Gaming.com, All Rights Reserved",
+        quickLinks: [],
+        legalPageLink: "/legal",
+      };
+    }
+
+    return brandingData;
+  }
+
+  async updateBranding(updates: Partial<Branding>): Promise<Branding> {
+    let updatedBranding: Branding;
+
+    // Check if a branding record exists
+    const existingBranding = await db.select().from(branding).limit(1).execute();
+
+    if (existingBranding.length === 0) {
+      // Create a new branding record
+      const [newBranding] = await db
+        .insert(branding)
+        .values({
+          ...updates,
+        })
+        .returning()
+        .execute();
+
+      if (!newBranding) {
+        throw new Error("Failed to create branding");
+      }
+
+      updatedBranding = newBranding;
+    } else {
+      // Update the existing branding record
+      const [result] = await db
+        .update(branding)
+        .set({
+          ...updates,
+          // No updatedAt field in schema, but could add if needed
+        })
+        .where(eq(branding.id, existingBranding[0].id))
+        .returning();
+
+      if (!result) {
+        throw new Error("Branding not found");
+      }
+
+      updatedBranding = result;
+    }
+
+    return updatedBranding;
   }
 
   async getSubscriptionStats(): Promise<{ tier: string; count: number }[]> {

@@ -108,8 +108,44 @@ export function setupAdminRoutes(app: Express) {
     }
   });
 
-  // leadboard endpoint
-  app.get("/api/admin/betoverview", getBettingOverview);
+  //LleadBoard Endpoint
+  app.get("/api/admin/betoverview", authMiddleware, adminMiddleware, getBettingOverview);
+
+  // Branding Endpoints
+  app.get("/api/admin/branding", authMiddleware, adminMiddleware, async (req: Request, res: Response) => {
+    try {
+      const branding = await storage.getBranding();
+      // Exclude sensitive details (e.g., admin account information)
+
+      const { adminSettings = {}, ...safeBranding } = branding ?? {};
+      const { adminAccount, ...safeAdminSettings } = adminSettings;
+
+      // Send the branding details excluding sensitive data
+      res.status(200).json({
+        ...safeBranding,
+        adminSettings: safeAdminSettings,
+      });
+    } catch (error) {
+      console.error("Error fetching branding details:", error);
+      res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  app.put("/api/admin/branding", async (req: Request, res: Response) => {
+    try {
+      const updates = req.body;
+      const branding = await storage.updateBranding(updates);
+
+      res.status(200).json({
+        message: "Branding details updated successfully",
+        branding,
+      });
+    } catch (error) {
+      console.error("Error updating branding details:", error);
+
+      res.status(500).json({ message: "Server error" });
+    }
+  });
 
   // === USER MANAGEMENT ENDPOINTS ===
 
