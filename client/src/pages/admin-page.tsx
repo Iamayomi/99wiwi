@@ -4,7 +4,7 @@ import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/use-auth";
 import { Redirect, Link, useLocation } from "wouter";
-
+import MainLayout from "@/components/layouts/main-layout";
 import { Card as UICard, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -18,6 +18,7 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -30,11 +31,12 @@ import {
   Loader2,
   Search,
   UserCog,
+  Settings2,
   CoinsIcon,
   History,
   Ban,
-  Trophy,
   Menu,
+  Trophy,
   ShieldAlert,
   Info,
   Coins,
@@ -2784,14 +2786,8 @@ const transformBettingStats = (data: BettingStats): OverviewStat[] => [
 
 // Component for the leaderboard tab
 function LeaderboardTab() {
-  const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(1);
-  const [isResetMonthlyDialogOpen, setIsResetMonthlyDialogOpen] = useState(false);
-  const [isResetWeeklyDialogOpen, setIsResetWeeklyDialogOpen] = useState(false);
-  const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
-  const [isNotificationDialogOpen, setIsNotificationDialogOpen] = useState(false);
 
   // Fetch overview stats
   const {
@@ -2836,6 +2832,7 @@ function LeaderboardTab() {
   };
 
   // Leaderboard entries to render
+
   const entriesToRender = leaderboardData || [];
 
   if (leaderboardError || statsError) {
@@ -2870,7 +2867,7 @@ function LeaderboardTab() {
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {statsData.map((item: OverviewStat, index: number) => (
-              <div key={index} className="bg-light_blue p-4 rounded-md border border-gray-500">
+              <div key={index} className="bg-light_blue p-4 rounded-md border border-gray-300">
                 <div className="font-jua text-gray-500">{item.name}</div>
                 <div className="text-2xl font-bold">{item.value}</div>
               </div>
@@ -2926,7 +2923,7 @@ function LeaderboardTab() {
             </Table>
 
             {/* Pagination */}
-            {searchTerm.length < 2 && leaderboardData && leaderboardData.pagination && (
+            {leaderboardData && leaderboardData.pagination && (
               <div className="flex justify-between items-center mt-4">
                 <div className="text-sm text-muted-foreground">
                   Showing page {page} of {leaderboardData.pagination.totalPages}
@@ -2944,6 +2941,444 @@ function LeaderboardTab() {
           </>
         )}
       </div>
+    </div>
+  );
+}
+
+const compressImageUpload = async (file: any, maxSize: any) => URL.createObjectURL(file);
+
+const ICONS = {
+  facebook: "https://via.placeholder.com/24",
+  instagram: "https://via.placeholder.com/24",
+  twitter: "https://via.placeholder.com/24",
+};
+
+const getBrandingDetails = async () => ({
+  siteName: "99wiwi",
+  logoUrl: "https://via.placeholder.com/150",
+  faviconUrl: "https://via.placeholder.com/32",
+  themeColor: "#FF6B6B",
+  timezone: "UTC",
+  language: "en",
+  fontFamily: "Roboto",
+  fontSize: "16",
+  headingStyle: "bold",
+  aboutUs: "Welcome to 99wiwi, your premier gaming platform!",
+  quickLinks: "Home\nGames\nLeaderboard\nFAQ",
+  socialMedia: { facebook: "", instagram: "", twitter: "" },
+  legalPages: "Terms\nPrivacy",
+  copyright: "© 2025 99wiwi",
+  widgetBlocks: ["Real-Time Gaming", "Secure Transactions", "Exclusive Rewards", "24/7 Support"],
+  navigationMenu: ["Home", "Games", "Leaderboard", "FAQ"],
+});
+
+const updateBrandingDetails = async (updates: any) => ({
+  branding: { ...(await getBrandingDetails()), ...updates },
+});
+
+type BrandingData = {
+  siteName: string;
+  logoUrl: string;
+  faviconUrl: string;
+  themeColor: string;
+  timezone: string;
+  language: string;
+  fontFamily: string;
+  fontSize: string;
+  headingStyle: string;
+  aboutUs: string;
+  quickLinks: string;
+  socialMedia: {
+    facebook: string;
+    instagram: string;
+    twitter: string;
+  };
+  legalPages: string;
+  copyright: string;
+  widgetBlocks: string[];
+  navigationMenu: string[]; // make sure this is string[]
+};
+
+// BrandingTab Component
+function BrandingTab() {
+  const { toast } = useToast();
+  const [brandingData, setBrandingData] = useState<BrandingData>({
+    siteName: "",
+    logoUrl: "",
+    faviconUrl: "",
+    themeColor: "#FF6B6B",
+    timezone: "",
+    language: "",
+    fontFamily: "",
+    fontSize: "",
+    headingStyle: "",
+    aboutUs: "",
+    quickLinks: "",
+    socialMedia: { facebook: "", instagram: "", twitter: "" },
+    legalPages: "",
+    copyright: "",
+    widgetBlocks: ["", "", "", ""],
+    navigationMenu: [],
+  });
+  const [newNavItem, setNewNavItem] = useState("");
+
+  // Fetch branding data
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: ["/api/admin/branding"],
+    queryFn: async () => {
+      const res = await getBrandingDetails();
+      return res;
+    },
+  });
+
+  useEffect(() => {
+    if (data) {
+      setBrandingData({
+        siteName: data.siteName || "",
+        logoUrl: data.logoUrl || "",
+        faviconUrl: data.faviconUrl || "",
+        themeColor: data.themeColor || "#FF6B6B",
+        timezone: data.timezone || "",
+        language: data.language || "",
+        fontFamily: data.fontFamily || "",
+        fontSize: data.fontSize || "",
+        headingStyle: data.headingStyle || "",
+        aboutUs: data.aboutUs || "",
+        quickLinks: data.quickLinks || "",
+        socialMedia: data.socialMedia || { facebook: "", instagram: "", twitter: "" },
+        legalPages: data.legalPages || "",
+        copyright: data.copyright || "",
+        widgetBlocks: data.widgetBlocks || ["", "", "", ""],
+        navigationMenu: data.navigationMenu || [],
+      });
+    }
+  }, [data]);
+
+  // Update branding data
+  const updateBranding = useMutation({
+    mutationFn: async (updatedData: BrandingData) => {
+      const res = await updateBrandingDetails(updatedData);
+      return res.branding;
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Branding settings updated successfully",
+      });
+      refetch();
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: `Failed to update branding settings: ${error.message}`,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Handle form changes
+  const handleChange = (e: any) => {
+    const { name, value } = e.target;
+    if (name.startsWith("socialMedia.")) {
+      const [, platform] = name.split(".");
+      setBrandingData((prev) => ({
+        ...prev,
+        socialMedia: { ...prev.socialMedia, [platform]: value },
+      }));
+    } else if (name.startsWith("widgetBlocks.")) {
+      const index = parseInt(name.split(".")[1], 10);
+      setBrandingData((prev) => {
+        const newWidgetBlocks = [...prev.widgetBlocks];
+        newWidgetBlocks[index] = value;
+        return { ...prev, widgetBlocks: newWidgetBlocks };
+      });
+    } else {
+      setBrandingData((prev) => ({ ...prev, [name]: value }));
+    }
+  };
+
+  const handleImageUpload = async (e: any, field: any) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const imageUrl = await compressImageUpload(file, 2048);
+      setBrandingData((prev) => ({ ...prev, [field]: imageUrl }));
+      toast({ description: "Image uploaded successfully" });
+    } catch (error) {
+      toast({ description: "Image upload failed", variant: "destructive" });
+    }
+  };
+
+  const handleAddNavItem = () => {
+    if (newNavItem.trim()) {
+      setBrandingData((prev) => ({
+        ...prev,
+        navigationMenu: [...prev.navigationMenu, newNavItem.trim()],
+      }));
+      setNewNavItem("");
+      toast({ description: "Navigation item added" });
+    }
+  };
+
+  const handleRemoveNavItem = (index: any) => {
+    setBrandingData((prev) => ({
+      ...prev,
+      navigationMenu: prev.navigationMenu.filter((_, i) => i !== index),
+    }));
+    toast({ description: "Navigation item removed" });
+  };
+
+  // Handle form submission
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    updateBranding.mutate(brandingData);
+  };
+
+  if (isLoading) {
+    return <div className="text-center p-8">Loading...</div>;
+  }
+
+  if (error) {
+    return (
+      <div className="text-center p-8">
+        <p className="text-red-500">Error loading branding settings: {error.message}</p>
+        <Button onClick={() => refetch()} className="mt-4 pr text-black hover:bg-yellow-400">
+          Retry
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-6 md:p-8 max-w-7xl mx-auto rounded-md border border-gray-30 text-white">
+      <h2 className="text-2xl font-bold mb-6">Site Branding</h2>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* General Branding */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div>
+            <label htmlFor="siteName" className="block text-gray-500 text-sm font-medium mb-2">
+              Site Name
+            </label>
+            <Input id="siteName" type="text" name="siteName" value={brandingData.siteName} onChange={handleChange} placeholder="Enter site name" />
+          </div>
+          <div>
+            <label htmlFor="logoUrl" className="block text-gray-500 text-sm font-medium mb-2">
+              Logo URL
+            </label>
+            <div className="relative">
+              <Input id="logoUrl" type="text" name="logoUrl" value={brandingData.logoUrl} onChange={handleChange} placeholder="Enter logo URL" />
+              <label htmlFor="logo-upload" className="absolute top-1/2 right-2 -translate-y-1/2 px-3 py-1 bg-primary  text-white text-xs rounded-full cursor-pointer hover:bg-primary/90 ">
+                Upload
+                <input id="logo-upload" type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e, "logoUrl")} />
+              </label>
+            </div>
+          </div>
+          <div>
+            <label htmlFor="faviconUrl" className="block text-gray-500 text-sm font-medium mb-2">
+              Favicon URL
+            </label>
+            <div className="relative">
+              <Input id="faviconUrl" type="text" name="faviconUrl" value={brandingData.faviconUrl} onChange={handleChange} placeholder="Enter favicon URL" />
+              <label htmlFor="favicon-upload" className="absolute top-1/2 right-2 -translate-y-1/2 px-3 py-1 bg-primary text-white text-xs rounded-full cursor-pointer hover:bg-primary/90 ">
+                Upload
+                <input id="favicon-upload" type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e, "faviconUrl")} />
+              </label>
+            </div>
+          </div>
+          <div>
+            <label htmlFor="themeColor" className="block text-gray-500 text-sm font-medium mb-2">
+              Theme Color
+            </label>
+            <div className="flex items-center gap-2">
+              <Input id="themeColor" type="color" name="themeColor" value={brandingData.themeColor} onChange={handleChange} className="w-10 h-10 p-1" />
+              <Input type="text" value={brandingData.themeColor} onChange={handleChange} name="themeColor" placeholder="#FF6B6B" />
+            </div>
+          </div>
+          <div>
+            <label htmlFor="timezone" className="block text-gray-500 text-sm font-medium mb-2">
+              Timezone
+            </label>
+            <Select value={brandingData.timezone} onValueChange={(value) => setBrandingData((prev) => ({ ...prev, timezone: value }))}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select timezone" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="UTC">UTC</SelectItem>
+                <SelectItem value="GMT">GMT</SelectItem>
+                <SelectItem value="EST">EST</SelectItem>
+                <SelectItem value="PST">PST</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <label htmlFor="language" className="block  text-gray-500 text-sm font-medium mb-2">
+              Default Language
+            </label>
+            <Select value={brandingData.language} onValueChange={(value) => setBrandingData((prev) => ({ ...prev, language: value }))}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select language" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="en">English</SelectItem>
+                <SelectItem value="es">Spanish</SelectItem>
+                <SelectItem value="fr">French</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        {/* Navigation Menu */}
+        <div className="border-t border-gray-700 pt-6">
+          <h3 className="text-xl font-semibold mb-4">Navigation Menu</h3>
+          <div className="space-y-4">
+            <div className="flex flex-wrap gap-2 items-center">
+              {brandingData.navigationMenu.map((item, index) => (
+                <div key={index} className="flex items-center gap-2 p-2 bg-gray-700 rounded-lg min-w-[100px]">
+                  <span>{item}</span>
+                  <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleRemoveNavItem(index)}>
+                    <i className="fa fa-trash text-red-500"></i>
+                  </Button>
+                </div>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <Input type="text" value={newNavItem} onChange={(e) => setNewNavItem(e.target.value)} placeholder="Enter new menu item" />
+              <Button onClick={handleAddNavItem} disabled={!newNavItem.trim()}>
+                Add Item
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* Typography */}
+        <div className="border-t border-gray-700 pt-6">
+          <h3 className="text-xl font-semibold mb-4">Typography</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div>
+              <label htmlFor="fontFamily" className="block text-gray-500 text-sm font-medium mb-2">
+                Font Family
+              </label>
+              <Select value={brandingData.fontFamily} onValueChange={(value) => setBrandingData((prev) => ({ ...prev, fontFamily: value }))}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select font" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Roboto">Roboto</SelectItem>
+                  <SelectItem value="Arial">Arial</SelectItem>
+                  <SelectItem value="Verdana">Verdana</SelectItem>
+                  <SelectItem value="Times New Roman">Times New Roman</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label htmlFor="fontSize" className="block  text-gray-500 text-sm font-medium mb-2">
+                Font Size
+              </label>
+              <Select value={brandingData.fontSize} onValueChange={(value) => setBrandingData((prev) => ({ ...prev, fontSize: value }))}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select size" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="12">12px</SelectItem>
+                  <SelectItem value="14">14px</SelectItem>
+                  <SelectItem value="16">16px</SelectItem>
+                  <SelectItem value="18">18px</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label htmlFor="headingStyle" className="block  text-gray-500 text-sm font-medium mb-2">
+                Heading Style
+              </label>
+              <Select value={brandingData.headingStyle} onValueChange={(value) => setBrandingData((prev) => ({ ...prev, headingStyle: value }))}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select style" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="bold">Bold</SelectItem>
+                  <SelectItem value="italic">Italic</SelectItem>
+                  <SelectItem value="underline">Underline</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer Customization */}
+        <div className="border-t border-gray-700 pt-6">
+          <h3 className="text-xl font-semibold mb-4">Footer Customization</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label htmlFor="aboutUs" className="block  text-gray-500 text-sm font-medium mb-2">
+                About Us
+              </label>
+              <Textarea id="aboutUs" name="aboutUs" value={brandingData.aboutUs} onChange={handleChange} placeholder="Write about 99wiwi" className="h-32" />
+            </div>
+            <div>
+              <label htmlFor="quickLinks" className="block  text-gray-500 text-sm font-medium mb-2">
+                Quick Links
+              </label>
+              <Textarea id="quickLinks" name="quickLinks" value={brandingData.quickLinks} onChange={handleChange} placeholder="Enter links (one per line)" className="h-32" />
+            </div>
+            <div>
+              <label className="block  text-gray-500 text-sm font-medium mb-2">Social Media Links</label>
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <img src={ICONS.facebook} alt="Facebook" className="h-5 w-5" />
+                  <Input id="socialMedia.facebook" name="socialMedia.facebook" value={brandingData.socialMedia.facebook} onChange={handleChange} placeholder="Facebook URL" />
+                </div>
+                <div className="flex items-center gap-2">
+                  <img src={ICONS.instagram} alt="Instagram" className="h-5 w-5" />
+                  <Input id="socialMedia.instagram" name="socialMedia.instagram" value={brandingData.socialMedia.instagram} onChange={handleChange} placeholder="Instagram URL" />
+                </div>
+                <div className="flex items-center gap-2">
+                  <img src={ICONS.twitter} alt="Twitter" className="h-5 w-5" />
+                  <Input id="socialMedia.twitter" name="socialMedia.twitter" value={brandingData.socialMedia.twitter} onChange={handleChange} placeholder="Twitter URL" />
+                </div>
+              </div>
+            </div>
+            <div>
+              <label htmlFor="legalPages" className="block  text-gray-500 text-sm font-medium mb-2">
+                Legal Pages
+              </label>
+              <Textarea id="legalPages" name="legalPages" value={brandingData.legalPages} onChange={handleChange} placeholder="Enter legal page links (one per line)" className="h-32" />
+            </div>
+          </div>
+        </div>
+
+        {/* Copyright */}
+        <div className="border-t border-gray-700 pt-6">
+          <h3 className="text-xl font-semibold mb-4">Copyright</h3>
+          <div>
+            <label htmlFor="copyright" className="block  text-gray-500 text-sm font-medium mb-2">
+              Copyright Message
+            </label>
+            <Input id="copyright" name="copyright" value={brandingData.copyright} onChange={handleChange} placeholder="© 2025 99wiwi" />
+          </div>
+        </div>
+
+        {/* Widget Blocks */}
+        <div className="border-t border-gray-700 pt-6">
+          <h3 className="text-xl font-semibold mb-4">Widget Blocks</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {brandingData.widgetBlocks.map((block, index) => (
+              <div key={index}>
+                <label htmlFor={`widgetBlocks.${index}`} className="block  text-gray-500 text-sm font-medium mb-2">
+                  Block {index + 1}
+                </label>
+                <Input id={`widgetBlocks.${index}`} name={`widgetBlocks.${index}`} value={block} onChange={handleChange} placeholder={`Enter block ${index + 1} name`} />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Submit Button */}
+        <div className="pt-6">
+          <Button type="submit" disabled={updateBranding.isPending}>
+            {updateBranding.isPending ? "Saving..." : "Save Changes"}
+          </Button>
+        </div>
+      </form>
     </div>
   );
 }
@@ -2967,7 +3402,8 @@ export default function AdminPage() {
     { key: "ban-appeals", label: "Ban Appeals", icon: MessagesSquare },
     { key: "coins", label: "Coins", icon: CoinsIcon },
     { key: "bonuses", label: "Bonuses", icon: Gift },
-    { key: "leaderboard-management", label: "leaderboard", icon: Trophy },
+    { key: "leaderboard", label: "leaderboard", icon: Trophy },
+    { key: "branding", label: "site branding", icon: Settings2 },
     { key: "gameconfig", label: "Game Config", icon: Settings },
     { key: "subscriptions", label: "Subscriptions", icon: Crown },
     { key: "passwords", label: "Passwords", icon: Lock },
@@ -2981,7 +3417,7 @@ export default function AdminPage() {
         return <UsersTab />;
       case "coins":
         return <CoinsTab />;
-      case "leaderboard-management":
+      case "leaderboard":
         return <LeaderboardTab />;
       case "bonuses":
         return <BonusesTab />;
@@ -2995,6 +3431,8 @@ export default function AdminPage() {
         return <SubscriptionsTab />;
       case "ban-appeals":
         return <BanAppealsTab />;
+      case "branding":
+        return <BrandingTab />;
       case "passwords":
         return <PasswordsTab />;
       case "transactions":
