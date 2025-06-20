@@ -9,9 +9,11 @@ import { setupAdminRoutes } from "./admin";
 import { setupRewardRoutes } from "./rewards";
 import { setupSupportRoutes } from "./support";
 import { setupPasswordResetRoutes } from "./reset-password";
+
 import { playSlots, playDice, startCrash, crashCashout, getTransactions, playRoulette, startBlackjack, blackjackAction, playPlinko, getBettingOverview } from "./games";
 import Stripe from "stripe";
 import { createPaymentIntentSchema, CoinPackage, subscriptionPlanSchema, manageSubscriptionSchema, SubscriptionPlan, banAppealSchema, LeaderBoard } from "@shared/schema";
+
 import { z } from "zod";
 
 // Define our coin packages
@@ -236,6 +238,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Server error" });
     }
   });
+
 
   // Ban appeal endpoints
   app.get("/api/user/ban-status", banStatusMiddleware, async (req: Request, res: Response) => {

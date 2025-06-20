@@ -469,6 +469,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                     </div>
                   )}
                 </div>
+
               </div>
             </header>
             <main className="flex-1 p-4 lg:p-6">{children}</main>

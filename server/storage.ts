@@ -39,9 +39,11 @@ import {
   SubscriptionPlan,
   PasswordResetToken,
   InsertPasswordResetToken,
+
   LeaderBoard,
   Branding,
   branding,
+
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, asc, sql, like, and, or, isNull } from "drizzle-orm";
@@ -76,6 +78,7 @@ export interface IStorage {
   // Transaction operations
   getUserTransactions(userId: number, limit?: number): Promise<Transaction[]>;
   createTransaction(transaction: InsertTransaction): Promise<Transaction>;
+
   getAllTransactions(): Promise<Transaction[]>;
 
   // Branding operations
@@ -745,6 +748,7 @@ export class DatabaseStorage implements IStorage {
     }));
   }
 
+
   /**
    * Get all transactions from the database
    * @returns Promise<{ transactions: Transaction[]; count: number }> - Array of all transaction records and total count
@@ -890,6 +894,7 @@ export class DatabaseStorage implements IStorage {
 
     return updatedBranding;
   }
+
 
   async getSubscriptionStats(): Promise<{ tier: string; count: number }[]> {
     const result = await db

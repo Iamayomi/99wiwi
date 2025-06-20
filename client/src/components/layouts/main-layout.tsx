@@ -3,12 +3,15 @@ import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { AnnouncementBanner } from "@/components/announcement-banner";
+
 import { Home, Dices, TrendingUp, Coins, Clock, MessageSquare, Gift, Crown, Settings, LogOut, Menu, X } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/lib/game-utils";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 import logo from "../../logo.png";
@@ -94,7 +97,9 @@ export default function MainLayout({ children }: MainLayoutProps) {
                 </Link>
               </div>
               <div className="flex items-center gap-2">
+
                 {user && <div className="text-sm font-medium mr-2">{formatCurrency(user.balance)}</div>}
+
 
                 <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
                   <SheetTrigger asChild>
@@ -106,7 +111,9 @@ export default function MainLayout({ children }: MainLayoutProps) {
                     <div className="flex flex-col h-full">
                       <div className="flex items-center justify-between py-2">
                         <h2 className="text-lg font-semibold">Menu</h2>
+
                         <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(false)}>
+
                           <X size={18} />
                         </Button>
                       </div>

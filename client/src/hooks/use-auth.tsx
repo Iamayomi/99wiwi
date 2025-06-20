@@ -52,7 +52,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         title: "Login successful",
         description: `Welcome back, ${data.user.username}!`,
       });
+
       setLocation("/profile"); // ✅ Redirect to profile
+
     },
     onError: (error) => {
       toast({
@@ -75,7 +77,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         title: "Registration successful",
         description: `Welcome to 99wiwi Casino, ${data.user.username}!`,
       });
-      setLocation("/profile"); // ✅ Redirect after registration
+
+      setLocation("/profile");
+
     },
     onError: (error) => {
       toast({
@@ -96,7 +100,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         title: "Logged out",
         description: "You have been successfully logged out",
       });
-      setLocation("/"); // ✅ Optional redirect after logout
+
+      setLocation("/");
+
     },
     onError: (error) => {
       toast({
