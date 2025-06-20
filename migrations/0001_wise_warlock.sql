@@ -1,0 +1,20 @@
+CREATE TABLE "branding" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"name" text DEFAULT '99wiwi',
+	"color" text DEFAULT '#03346E',
+	"logo" text DEFAULT '/images/logo.png',
+	"favicon" text DEFAULT '/images/favicon',
+	"font" jsonb DEFAULT '{"family":"sans-serif","size":"16px"}'::jsonb,
+	"language" text DEFAULT 'en-US',
+	"timezone" text DEFAULT 'UTC',
+	"about_us" text DEFAULT '',
+	"social_media" jsonb DEFAULT '{"facebook":"","twitter":"","instagram":"","linkedin":"","youtube":""}'::jsonb,
+	"copyright" text DEFAULT 'Copyright@. Online Gaming.com, All Rights Reserved',
+	"quick_links" text DEFAULT '',
+	"legal_pages" text DEFAULT '',
+	"admin_settings" jsonb DEFAULT '{"paymentGateway":"Paystack","currency":"NGN","dailyTransactionLimit":"1000","maximumUsers":"100000","defaultUserRole":"player","notifications":{"enableEmail":true,"enableSMS":false},"liveChat":{"enabled":true,"link":""},"support":{"email":"","phone":""},"adminAccount":{"email":"","password":""},"userVerification":""}'::jsonb,
+	"predefined_bets" text[] DEFAULT '{}',
+	"widget_blocks" text[] DEFAULT '{}',
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL
+);

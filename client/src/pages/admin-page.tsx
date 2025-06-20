@@ -1,17 +1,15 @@
-import React, { useState, useEffect } from "react";
-import { useMutation, useQuery } from "@tanstack/react-query";
+
+import React, { useState, useEffect, useCallback } from "react";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
+// import { debounce } from "lodash";
+
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/use-auth";
 import { Redirect, Link, useLocation } from "wouter";
 import MainLayout from "@/components/layouts/main-layout";
-import {
-  Card as UICard,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  CardFooter,
-} from "@/components/ui/card";
+
+import { Card as UICard, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+
 import { Badge } from "@/components/ui/badge";
 import {
   AlertDialog,
@@ -25,56 +23,26 @@ import {
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  AreaChart,
-  Area,
-  BarChart,
-  Bar,
-  PieChart,
-  Pie,
-  ResponsiveContainer,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  Cell,
-} from "recharts";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { AreaChart, Area, BarChart, Bar, PieChart, Pie, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Cell } from "recharts";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Loader2,
   Search,
   UserCog,
+  Settings2,
   CoinsIcon,
   History,
   Ban,
   Menu,
+  Trophy,
   ShieldAlert,
   Info,
   Coins,
@@ -90,7 +58,8 @@ import {
   Users,
   Key,
   Lock,
-  LogOut,
+  FileText,
+  Bell,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { formatCurrency } from "@/lib/game-utils";
@@ -132,10 +101,9 @@ function UsersTab() {
   } = useQuery({
     queryKey: ["/api/admin/users", page],
     queryFn: async () => {
-      const res = await apiRequest(
-        "GET",
-        `/api/admin/users?page=${page}&limit=10`
-      );
+
+      const res = await apiRequest("GET", `/api/admin/users?page=${page}&limit=10`);
+
       return await res.json();
     },
   });
@@ -149,10 +117,9 @@ function UsersTab() {
     queryKey: ["/api/admin/users/search", searchTerm],
     queryFn: async () => {
       if (!searchTerm || searchTerm.length < 2) return { users: [] };
-      const res = await apiRequest(
-        "GET",
-        `/api/admin/users/search?q=${encodeURIComponent(searchTerm)}`
-      );
+
+      const res = await apiRequest("GET", `/api/admin/users/search?q=${encodeURIComponent(searchTerm)}`);
+
       return await res.json();
     },
     enabled: searchTerm.length >= 2,
@@ -160,18 +127,10 @@ function UsersTab() {
 
   // Update admin status mutation
   const updateAdminStatus = useMutation({
-    mutationFn: async ({
-      userId,
-      isAdmin,
-    }: {
-      userId: number;
-      isAdmin: boolean;
-    }) => {
-      const res = await apiRequest(
-        "PATCH",
-        `/api/admin/users/${userId}/admin-status`,
-        { isAdmin }
-      );
+
+    mutationFn: async ({ userId, isAdmin }: { userId: number; isAdmin: boolean }) => {
+      const res = await apiRequest("PATCH", `/api/admin/users/${userId}/admin-status`, { isAdmin });
+
       return await res.json();
     },
     onSuccess: () => {
@@ -194,29 +153,18 @@ function UsersTab() {
 
   // Ban/unban user mutation
   const updateBanStatus = useMutation({
-    mutationFn: async ({
-      userId,
-      isBanned,
-      banReason,
-    }: {
-      userId: number;
-      isBanned: boolean;
-      banReason?: string;
-    }) => {
+
+    mutationFn: async ({ userId, isBanned, banReason }: { userId: number; isBanned: boolean; banReason?: string }) => {
       // For banning, use POST to /api/admin/users/:userId/ban with banReason
       // For unbanning, use POST to /api/admin/users/:userId/unban
       if (isBanned) {
-        const res = await apiRequest(
-          "POST",
-          `/api/admin/users/${userId}/unban`
-        );
+        const res = await apiRequest("POST", `/api/admin/users/${userId}/unban`);
+
         return await res.json();
       } else {
         // When banning, require a reason
         if (!banReason || banReason.trim().length < 3) {
-          throw new Error(
-            "Ban reason is required and must be at least 3 characters"
-          );
+          throw new Error("Ban reason is required and must be at least 3 characters");
         }
         // Send just the banReason (not the userId, as it's in the URL)
         const res = await apiRequest("POST", `/api/admin/users/${userId}/ban`, {
@@ -284,11 +232,8 @@ function UsersTab() {
   };
 
   // Users to render (search results or paginated list)
-  const usersToRender =
-    searchTerm.length >= 2 && searchResults
-      ? searchResults.users
-      : usersData?.users || [];
 
+  const usersToRender = searchTerm.length >= 2 && searchResults ? searchResults.users : usersData?.users || [];
   if (error) {
     return (
       <div className="text-center p-8">
@@ -307,13 +252,7 @@ function UsersTab() {
     <div>
       <div className="mb-6">
         <form onSubmit={handleSearch} className="flex gap-2">
-          <Input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search users by username..."
-            className="flex-1"
-          />
+          <Input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="Search users by username..." className="flex-1" />
           <Button type="submit" disabled={isSearching || searchTerm.length < 2}>
             {isSearching ? (
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -353,12 +292,8 @@ function UsersTab() {
                     <TableCell>{user.id}</TableCell>
                     <TableCell>
                       {user.username}
-                      {user.isOwner && (
-                        <Badge className="ml-2 bg-purple-600">Owner</Badge>
-                      )}
-                      {user.isAdmin && !user.isOwner && (
-                        <Badge className="ml-2 bg-blue-600">Admin</Badge>
-                      )}
+                      {user.isOwner && <Badge className="ml-2 bg-purple-600">Owner</Badge>}
+                      {user.isAdmin && !user.isOwner && <Badge className="ml-2 bg-blue-600">Admin</Badge>}
                     </TableCell>
                     <TableCell>{formatCurrency(user.balance)}</TableCell>
                     <TableCell>
@@ -375,31 +310,19 @@ function UsersTab() {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleViewUserDetails(user)}
-                        >
+                        <Button variant="outline" size="sm" onClick={() => handleViewUserDetails(user)}>
                           <Info className="h-4 w-4" />
                         </Button>
 
                         {!user.isOwner && (
-                          <Button
-                            variant={user.isBanned ? "outline" : "destructive"}
-                            size="sm"
-                            onClick={() => handleBanAction(user)}
-                          >
+                          <Button variant={user.isBanned ? "outline" : "destructive"} size="sm" onClick={() => handleBanAction(user)}>
                             <Ban className="h-4 w-4" />
                           </Button>
                         )}
 
                         {/* Only owner can manage admin privileges */}
                         {!user.isOwner && currentUser?.isOwner && (
-                          <Button
-                            variant={user.isAdmin ? "default" : "outline"}
-                            size="sm"
-                            onClick={() => handleAdminAction(user)}
-                          >
+                          <Button variant={user.isAdmin ? "default" : "outline"} size="sm" onClick={() => handleAdminAction(user)}>
                             <ShieldAlert className="h-4 w-4" />
                           </Button>
                         )}
@@ -418,20 +341,10 @@ function UsersTab() {
                 Showing page {page} of {usersData.pagination.totalPages}
               </div>
               <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handlePrevPage}
-                  disabled={page === 1}
-                >
+                <Button variant="outline" size="sm" onClick={handlePrevPage} disabled={page === 1}>
                   Previous
                 </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleNextPage}
-                  disabled={page >= usersData.pagination.totalPages}
-                >
+                <Button variant="outline" size="sm" onClick={handleNextPage} disabled={page >= usersData.pagination.totalPages}>
                   Next
                 </Button>
               </div>
@@ -460,9 +373,7 @@ function UsersTab() {
                 </div>
                 <div>
                   <Label>Balance</Label>
-                  <div className="text-green-600 font-semibold">
-                    {formatCurrency(selectedUser.balance)}
-                  </div>
+                  <div className="text-green-600 font-semibold">{formatCurrency(selectedUser.balance)}</div>
                 </div>
                 <div>
                   <Label>Play Count</Label>
@@ -471,12 +382,8 @@ function UsersTab() {
                 <div>
                   <Label>Status</Label>
                   <div>
-                    {selectedUser.isOwner && (
-                      <Badge className="mr-2 bg-purple-600">Owner</Badge>
-                    )}
-                    {selectedUser.isAdmin && !selectedUser.isOwner && (
-                      <Badge className="mr-2 bg-blue-600">Admin</Badge>
-                    )}
+                    {selectedUser.isOwner && <Badge className="mr-2 bg-purple-600">Owner</Badge>}
+                    {selectedUser.isAdmin && !selectedUser.isOwner && <Badge className="mr-2 bg-blue-600">Admin</Badge>}
                     {selectedUser.isBanned ? (
                       <Badge variant="destructive">Banned</Badge>
                     ) : (
@@ -491,11 +398,9 @@ function UsersTab() {
                 </div>
                 <div>
                   <Label>Last Login</Label>
-                  <div>
-                    {selectedUser.lastLogin
-                      ? new Date(selectedUser.lastLogin).toLocaleString()
-                      : "Never"}
-                  </div>
+
+                  <div>{selectedUser.lastLogin ? new Date(selectedUser.lastLogin).toLocaleString() : "Never"}</div>
+
                 </div>
               </div>
 
@@ -516,9 +421,9 @@ function UsersTab() {
       <Dialog open={isBanDialogOpen} onOpenChange={setIsBanDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>
-              {selectedUser?.isBanned ? "Unban User" : "Ban User"}
-            </DialogTitle>
+
+            <DialogTitle>{selectedUser?.isBanned ? "Unban User" : "Ban User"}</DialogTitle>
+
             <DialogDescription>
               {selectedUser?.isBanned
                 ? "Are you sure you want to unban this user? They will regain access to the platform."
@@ -539,19 +444,8 @@ function UsersTab() {
                   <Label htmlFor="banReason" className="text-sm font-medium">
                     Ban Reason <span className="text-red-500">*</span>
                   </Label>
-                  <Textarea
-                    id="banReason"
-                    placeholder="Please provide a reason for banning this user..."
-                    value={banReason}
-                    onChange={(e) => setBanReason(e.target.value)}
-                    className="mt-1"
-                    rows={3}
-                  />
-                  {updateBanStatus.error && banReason.trim().length < 3 && (
-                    <p className="text-sm text-red-500 mt-1">
-                      Ban reason is required and must be at least 3 characters
-                    </p>
-                  )}
+                  <Textarea id="banReason" placeholder="Please provide a reason for banning this user..." value={banReason} onChange={(e) => setBanReason(e.target.value)} className="mt-1" rows={3} />
+                  {updateBanStatus.error && banReason.trim().length < 3 && <p className="text-sm text-red-500 mt-1">Ban reason is required and must be at least 3 characters</p>}
                 </div>
               )}
 
@@ -562,8 +456,7 @@ function UsersTab() {
                     setIsBanDialogOpen(false);
                     setBanReason(""); // Reset the ban reason when closing
                   }}
-                  disabled={updateBanStatus.isPending}
-                >
+                  disabled={updateBanStatus.isPending}>
                   Cancel
                 </Button>
                 <Button
@@ -575,14 +468,10 @@ function UsersTab() {
                       banReason: banReason,
                     })
                   }
-                  disabled={
-                    updateBanStatus.isPending ||
-                    (!selectedUser.isBanned && banReason.trim().length < 3)
-                  }
-                >
-                  {updateBanStatus.isPending && (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  )}
+
+                  disabled={updateBanStatus.isPending || (!selectedUser.isBanned && banReason.trim().length < 3)}>
+                  {updateBanStatus.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+
                   {selectedUser.isBanned ? "Unban User" : "Ban User"}
                 </Button>
               </div>
@@ -595,13 +484,11 @@ function UsersTab() {
       <Dialog open={isAdminDialogOpen} onOpenChange={setIsAdminDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>
-              {selectedUser?.isAdmin ? "Remove Admin" : "Make Admin"}
-            </DialogTitle>
+
+            <DialogTitle>{selectedUser?.isAdmin ? "Remove Admin" : "Make Admin"}</DialogTitle>
             <DialogDescription>
-              {selectedUser?.isAdmin
-                ? "Are you sure you want to remove admin privileges from this user?"
-                : "Are you sure you want to grant admin privileges to this user?"}
+              {selectedUser?.isAdmin ? "Are you sure you want to remove admin privileges from this user?" : "Are you sure you want to grant admin privileges to this user?"}
+
             </DialogDescription>
           </DialogHeader>
 
@@ -613,11 +500,9 @@ function UsersTab() {
               </div>
 
               <div className="flex justify-end gap-2 pt-4">
-                <Button
-                  variant="outline"
-                  onClick={() => setIsAdminDialogOpen(false)}
-                  disabled={updateAdminStatus.isPending}
-                >
+
+                <Button variant="outline" onClick={() => setIsAdminDialogOpen(false)} disabled={updateAdminStatus.isPending}>
+
                   Cancel
                 </Button>
                 <Button
@@ -628,11 +513,9 @@ function UsersTab() {
                       isAdmin: !selectedUser.isAdmin,
                     })
                   }
-                  disabled={updateAdminStatus.isPending}
-                >
-                  {updateAdminStatus.isPending && (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  )}
+                  disabled={updateAdminStatus.isPending}>
+                  {updateAdminStatus.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+
                   {selectedUser.isAdmin ? "Remove Admin" : "Make Admin"}
                 </Button>
               </div>
@@ -662,10 +545,9 @@ function CoinsTab() {
     queryKey: ["/api/admin/users/search", username],
     queryFn: async () => {
       if (!username || username.length < 2) return { users: [] };
-      const res = await apiRequest(
-        "GET",
-        `/api/admin/users/search?q=${encodeURIComponent(username)}`
-      );
+
+      const res = await apiRequest("GET", `/api/admin/users/search?q=${encodeURIComponent(username)}`);
+
       return await res.json();
     },
     enabled: username.length >= 2,
@@ -680,43 +562,32 @@ function CoinsTab() {
   } = useQuery({
     queryKey: ["/api/admin/coin-transactions"],
     queryFn: async () => {
-      const res = await apiRequest(
-        "GET",
-        `/api/admin/coin-transactions?limit=20`
-      );
+
+      const res = await apiRequest("GET", `/api/admin/coin-transactions?limit=20`);
+
       return await res.json();
     },
   });
 
   // Adjust user balance mutation
   const adjustBalance = useMutation({
-    mutationFn: async ({
-      userId,
-      amount,
-      reason,
-    }: {
-      userId: number;
-      amount: number;
-      reason: string;
-    }) => {
-      const res = await apiRequest(
-        "POST",
-        `/api/admin/users/${userId}/adjust-balance`,
-        {
-          amount,
-          reason,
-        }
-      );
+
+    mutationFn: async ({ userId, amount, reason }: { userId: number; amount: number; reason: string }) => {
+      const res = await apiRequest("POST", `/api/admin/users/${userId}/adjust-balance`, {
+        amount,
+        reason,
+      });
+
       return await res.json();
     },
     onSuccess: () => {
       toast({
         title: "Success",
         description: "User balance adjusted successfully",
+
       });
-      queryClient.invalidateQueries({
-        queryKey: ["/api/admin/coin-transactions"],
-      });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/coin-transactions"] });
+
       setIsAdjustDialogOpen(false);
       setCoinAmount("100");
       setReason("");
@@ -816,75 +687,42 @@ function CoinsTab() {
         <UICard>
           <CardHeader>
             <CardTitle>Adjust User Balance</CardTitle>
-            <CardDescription>
-              Add or remove coins from a user's account
-            </CardDescription>
+            <CardDescription>Add or remove coins from a user's account</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               <div>
                 <Label htmlFor="username">Username</Label>
                 <form onSubmit={handleSearch} className="flex gap-2 mt-1">
-                  <Input
-                    id="username"
-                    type="text"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    placeholder="Search by username..."
-                    className="flex-1"
-                  />
-                  <Button
-                    type="submit"
-                    disabled={isSearching || username.length < 2}
-                  >
-                    {isSearching ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Search className="h-4 w-4" />
-                    )}
+
+                  <Input id="username" type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Search by username..." className="flex-1" />
+                  <Button type="submit" disabled={isSearching || username.length < 2}>
+                    {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
                   </Button>
                 </form>
 
-                {username.length >= 2 &&
-                  searchResults &&
-                  searchResults.users &&
-                  searchResults.users.length > 0 && (
-                    <div className="mt-2 border rounded-md max-h-40 overflow-y-auto">
-                      {searchResults.users.map((user: any) => (
-                        <div
-                          key={user.id}
-                          className={`p-2 cursor-pointer hover:bg-muted flex justify-between items-center ${
-                            selectedUser?.id === user.id ? "bg-muted" : ""
-                          }`}
-                          onClick={() => handleSelectUser(user)}
-                        >
-                          <div>
-                            <span className="font-medium">{user.username}</span>
-                            {user.isOwner && (
-                              <Badge className="ml-2 bg-purple-600">
-                                Owner
-                              </Badge>
-                            )}
-                            {user.isAdmin && !user.isOwner && (
-                              <Badge className="ml-2 bg-blue-600">Admin</Badge>
-                            )}
-                          </div>
-                          <span className="text-green-600">
-                            {formatCurrency(user.balance)}
-                          </span>
+                {username.length >= 2 && searchResults && searchResults.users && searchResults.users.length > 0 && (
+                  <div className="mt-2 border rounded-md max-h-40 overflow-y-auto">
+                    {searchResults.users.map((user: any) => (
+                      <div
+                        key={user.id}
+                        className={`p-2 cursor-pointer hover:bg-muted flex justify-between items-center ${selectedUser?.id === user.id ? "bg-muted" : ""}`}
+                        onClick={() => handleSelectUser(user)}>
+                        <div>
+                          <span className="font-medium">{user.username}</span>
+                          {user.isOwner && <Badge className="ml-2 bg-purple-600">Owner</Badge>}
+                          {user.isAdmin && !user.isOwner && <Badge className="ml-2 bg-blue-600">Admin</Badge>}
                         </div>
-                      ))}
-                    </div>
-                  )}
+                        <span className="text-green-600">{formatCurrency(user.balance)}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
 
-                {username.length >= 2 &&
-                  searchResults &&
-                  searchResults.users &&
-                  searchResults.users.length === 0 && (
-                    <div className="mt-2 text-sm text-muted-foreground">
-                      No users found with that username
-                    </div>
-                  )}
+                {username.length >= 2 && searchResults && searchResults.users && searchResults.users.length === 0 && (
+                  <div className="mt-2 text-sm text-muted-foreground">No users found with that username</div>
+                )}
+
 
                 {selectedUser && (
                   <div className="mt-4 p-3 border rounded-md bg-muted/50">
@@ -945,13 +783,8 @@ function CoinsTab() {
                   <TableRow key={transaction.id}>
                     <TableCell>{transaction.id}</TableCell>
                     <TableCell>{transaction.userId}</TableCell>
-                    <TableCell
-                      className={
-                        transaction.amount > 0
-                          ? "text-green-600 font-medium"
-                          : "text-red-600 font-medium"
-                      }
-                    >
+                    <TableCell className={transaction.amount > 0 ? "text-green-600 font-medium" : "text-red-600 font-medium"}>
+
                       {transaction.amount > 0 ? "+" : ""}
                       {formatCurrency(transaction.amount)}
                     </TableCell>
@@ -973,58 +806,35 @@ function CoinsTab() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Adjust User Balance</DialogTitle>
-            <DialogDescription>
-              Add or remove coins from {selectedUser?.username}'s account. Use
-              positive numbers to add coins and negative numbers to remove
-              coins.
-            </DialogDescription>
+            <DialogDescription>Add or remove coins from {selectedUser?.username}'s account. Use positive numbers to add coins and negative numbers to remove coins.</DialogDescription>
+
           </DialogHeader>
 
           <form onSubmit={handleSubmitAdjustment} className="space-y-4">
             <div>
               <Label htmlFor="amount">Amount</Label>
               <div className="relative mt-1">
-                <Input
-                  id="amount"
-                  type="number"
-                  value={coinAmount}
-                  onChange={(e) => setCoinAmount(e.target.value)}
-                  className="pl-8"
-                  placeholder="Enter amount..."
-                />
+                <Input id="amount" type="number" value={coinAmount} onChange={(e) => setCoinAmount(e.target.value)} className="pl-8" placeholder="Enter amount..." />
                 <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                   <span className="text-muted-foreground">$</span>
                 </div>
               </div>
-              <p className="text-sm text-muted-foreground mt-1">
-                Use negative value (e.g. -100) to remove coins
-              </p>
+              <p className="text-sm text-muted-foreground mt-1">Use negative value (e.g. -100) to remove coins</p>
             </div>
 
             <div>
               <Label htmlFor="reason">Reason</Label>
-              <Textarea
-                id="reason"
-                value={reason}
-                onChange={(e) => setReason(e.target.value)}
-                placeholder="Provide a reason for this adjustment..."
-                className="mt-1"
-              />
+              <Textarea id="reason" value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Provide a reason for this adjustment..." className="mt-1" />
             </div>
 
             <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setIsAdjustDialogOpen(false)}
-                disabled={adjustBalance.isPending}
-              >
+
+              <Button type="button" variant="outline" onClick={() => setIsAdjustDialogOpen(false)} disabled={adjustBalance.isPending}>
                 Cancel
               </Button>
               <Button type="submit" disabled={adjustBalance.isPending}>
-                {adjustBalance.isPending && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                )}
+                {adjustBalance.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+
                 Confirm Adjustment
               </Button>
             </DialogFooter>
@@ -1087,38 +897,20 @@ function BonusesTab() {
       <UICard>
         <CardHeader>
           <CardTitle>Send Mass Bonus</CardTitle>
-          <CardDescription>
-            Send coins to multiple users at once based on criteria
-          </CardDescription>
+          <CardDescription>Send coins to multiple users at once based on criteria</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-4">
               <div>
                 <Label htmlFor="amount">Bonus Amount</Label>
-                <Input
-                  id="amount"
-                  type="number"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  min="1"
-                  className="w-full"
-                  required
-                />
+                <Input id="amount" type="number" value={amount} onChange={(e) => setAmount(e.target.value)} min="1" className="w-full" required />
               </div>
 
               <div>
                 <Label htmlFor="reason">Reason</Label>
-                <Input
-                  id="reason"
-                  value={reason}
-                  onChange={(e) => setReason(e.target.value)}
-                  className="w-full"
-                  required
-                />
-                <p className="text-sm text-muted-foreground mt-1">
-                  Users will see this as the reason for receiving coins
-                </p>
+                <Input id="reason" value={reason} onChange={(e) => setReason(e.target.value)} className="w-full" required />
+                <p className="text-sm text-muted-foreground mt-1">Users will see this as the reason for receiving coins</p>
               </div>
 
               <div>
@@ -1147,33 +939,19 @@ function BonusesTab() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="minPlayCount">Min Play Count</Label>
-                    <Input
-                      id="minPlayCount"
-                      type="number"
-                      value={minPlayCount}
-                      onChange={(e) => setMinPlayCount(e.target.value)}
-                      min="0"
-                    />
+                    <Input id="minPlayCount" type="number" value={minPlayCount} onChange={(e) => setMinPlayCount(e.target.value)} min="0" />
                   </div>
                   <div>
                     <Label htmlFor="maxPlayCount">Max Play Count</Label>
-                    <Input
-                      id="maxPlayCount"
-                      type="number"
-                      value={maxPlayCount}
-                      onChange={(e) => setMaxPlayCount(e.target.value)}
-                      min="0"
-                    />
+                    <Input id="maxPlayCount" type="number" value={maxPlayCount} onChange={(e) => setMaxPlayCount(e.target.value)} min="0" />
                   </div>
                 </div>
               )}
             </div>
 
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={sendBonus.isPending}
-            >
+
+            <Button type="submit" className="w-full" disabled={sendBonus.isPending}>
+
               {sendBonus.isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -1212,10 +990,9 @@ function AnnouncementsTab() {
   } = useQuery({
     queryKey: ["/api/admin/announcements"],
     queryFn: async () => {
-      const res = await apiRequest(
-        "GET",
-        "/api/admin/announcements?includeExpired=true"
-      );
+
+      const res = await apiRequest("GET", "/api/admin/announcements?includeExpired=true");
+
       return await res.json();
     },
   });
@@ -1330,40 +1107,20 @@ function AnnouncementsTab() {
                   <div className="flex justify-between">
                     <div>
                       <CardTitle>{announcement.title}</CardTitle>
-                      <CardDescription>
-                        {new Date(announcement.createdAt).toLocaleString()}
-                      </CardDescription>
+                      <CardDescription>{new Date(announcement.createdAt).toLocaleString()}</CardDescription>
                     </div>
-                    {announcement.isPinned && (
-                      <Badge className="h-6">Pinned</Badge>
-                    )}
+                    {announcement.isPinned && <Badge className="h-6">Pinned</Badge>}
                   </div>
                 </CardHeader>
                 <CardContent>
                   <p className="whitespace-pre-line">{announcement.message}</p>
                 </CardContent>
                 <CardFooter className="flex justify-between">
-                  <div className="text-sm text-muted-foreground">
-                    {announcement.expiresAt ? (
-                      <>
-                        Expires:{" "}
-                        {new Date(announcement.expiresAt).toLocaleString()}
-                      </>
-                    ) : (
-                      <>Never expires</>
-                    )}
-                  </div>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => deleteAnnouncement.mutate(announcement.id)}
-                    disabled={deleteAnnouncement.isPending}
-                  >
-                    {deleteAnnouncement.isPending ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      "Delete"
-                    )}
+
+                  <div className="text-sm text-muted-foreground">{announcement.expiresAt ? <>Expires: {new Date(announcement.expiresAt).toLocaleString()}</> : <>Never expires</>}</div>
+                  <Button variant="destructive" size="sm" onClick={() => deleteAnnouncement.mutate(announcement.id)} disabled={deleteAnnouncement.isPending}>
+                    {deleteAnnouncement.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Delete"}
+
                   </Button>
                 </CardFooter>
               </UICard>
@@ -1377,34 +1134,21 @@ function AnnouncementsTab() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Create Announcement</DialogTitle>
-            <DialogDescription>
-              Create a new announcement for all users. Announcements appear on
-              the site banner.
-            </DialogDescription>
+
+            <DialogDescription>Create a new announcement for all users. Announcements appear on the site banner.</DialogDescription>
+
           </DialogHeader>
 
           <form onSubmit={handleSubmit}>
             <div className="space-y-4 py-2">
               <div>
                 <Label htmlFor="title">Title</Label>
-                <Input
-                  id="title"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  className="w-full"
-                  required
-                />
+                <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} className="w-full" required />
               </div>
 
               <div>
                 <Label htmlFor="message">Message</Label>
-                <Textarea
-                  id="message"
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  className="w-full h-24"
-                  required
-                />
+                <Textarea id="message" value={message} onChange={(e) => setMessage(e.target.value)} className="w-full h-24" required />
               </div>
 
               <div>
@@ -1423,23 +1167,13 @@ function AnnouncementsTab() {
               </div>
 
               <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id="isPinned"
-                  checked={isPinned}
-                  onChange={(e) => setIsPinned(e.target.checked)}
-                  className="h-4 w-4"
-                />
+                <input type="checkbox" id="isPinned" checked={isPinned} onChange={(e) => setIsPinned(e.target.checked)} className="h-4 w-4" />
                 <Label htmlFor="isPinned">Pin to top</Label>
               </div>
 
               <div>
                 <Label htmlFor="duration">Duration (seconds)</Label>
-                <Select
-                  value={duration}
-                  onValueChange={setDuration}
-                  disabled={isPinned}
-                >
+                <Select value={duration} onValueChange={setDuration} disabled={isPinned}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select duration" />
                   </SelectTrigger>
@@ -1450,28 +1184,19 @@ function AnnouncementsTab() {
                     <SelectItem value="120">2 minutes</SelectItem>
                   </SelectContent>
                 </Select>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {isPinned
-                    ? "Pinned announcements don't expire"
-                    : "How long this announcement will be visible (5-300 seconds)"}
-                </p>
+
+                <p className="text-sm text-muted-foreground mt-1">{isPinned ? "Pinned announcements don't expire" : "How long this announcement will be visible (5-300 seconds)"}</p>
               </div>
             </div>
 
             <DialogFooter className="mt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setIsCreateDialogOpen(false)}
-              >
+              <Button type="button" variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
                 Cancel
               </Button>
               <Button type="submit" disabled={createAnnouncement.isPending}>
-                {createAnnouncement.isPending ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  "Create"
-                )}
+
+                {createAnnouncement.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Create"}
+
               </Button>
             </DialogFooter>
           </form>
@@ -1497,10 +1222,9 @@ function GameConfigTab() {
   } = useQuery({
     queryKey: ["/api/admin/game-config", selectedGame],
     queryFn: async () => {
-      const res = await apiRequest(
-        "GET",
-        `/api/admin/game-config/${selectedGame}`
-      );
+
+      const res = await apiRequest("GET", `/api/admin/game-config/${selectedGame}`);
+
       return await res.json();
     },
   });
@@ -1589,31 +1313,25 @@ function GameConfigTab() {
       ) : (
         <UICard>
           <CardHeader>
-            <CardTitle>
-              {selectedGame.charAt(0).toUpperCase() + selectedGame.slice(1)}{" "}
-              Settings
-            </CardTitle>
-            <CardDescription>
-              Configure game parameters and odds
-            </CardDescription>
+
+            <CardTitle>{selectedGame.charAt(0).toUpperCase() + selectedGame.slice(1)} Settings</CardTitle>
+            <CardDescription>Configure game parameters and odds</CardDescription>
+
           </CardHeader>
           <CardContent>
             {!isEditing ? (
               <div className="space-y-4">
                 {gameConfig &&
-                  Object.entries(gameConfig).map(
-                    ([key, value]: [string, any]) => (
-                      <div key={key} className="grid grid-cols-2">
-                        <div className="font-medium">{key}</div>
-                        <div>{value.toString()}</div>
-                      </div>
-                    )
-                  )}
 
-                <Button
-                  onClick={() => setIsEditing(true)}
-                  className="w-full mt-4"
-                >
+                  Object.entries(gameConfig).map(([key, value]: [string, any]) => (
+                    <div key={key} className="grid grid-cols-2">
+                      <div className="font-medium">{key}</div>
+                      <div>{value.toString()}</div>
+                    </div>
+                  ))}
+
+                <Button onClick={() => setIsEditing(true)} className="w-full mt-4">
+
                   <Settings className="mr-2 h-4 w-4" />
                   Edit Configuration
                 </Button>
@@ -1621,22 +1339,19 @@ function GameConfigTab() {
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
                 {gameConfig &&
-                  Object.entries(gameConfig).map(
-                    ([key, value]: [string, any]) => (
-                      <div key={key}>
-                        <Label htmlFor={key}>{key}</Label>
-                        <Input
-                          id={key}
-                          type={typeof value === "number" ? "number" : "text"}
-                          value={gameConfig[key]}
-                          onChange={(e) =>
-                            handleInputChange(key, e.target.value)
-                          }
-                          step={typeof value === "number" ? 0.01 : undefined}
-                        />
-                      </div>
-                    )
-                  )}
+                  Object.entries(gameConfig).map(([key, value]: [string, any]) => (
+                    <div key={key}>
+                      <Label htmlFor={key}>{key}</Label>
+                      <Input
+                        id={key}
+                        type={typeof value === "number" ? "number" : "text"}
+                        value={gameConfig[key]}
+                        onChange={(e) => handleInputChange(key, e.target.value)}
+                        step={typeof value === "number" ? 0.01 : undefined}
+                      />
+                    </div>
+                  ))}
+
 
                 <div className="flex justify-end gap-2 pt-4">
                   <Button
@@ -1645,16 +1360,12 @@ function GameConfigTab() {
                     onClick={() => {
                       setIsEditing(false);
                       refetch(); // Reset to original values
-                    }}
-                  >
+                    }}>
                     Cancel
                   </Button>
                   <Button type="submit" disabled={updateConfig.isPending}>
-                    {updateConfig.isPending ? (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : (
-                      "Save Changes"
-                    )}
+
+                    {updateConfig.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Save Changes"}
                   </Button>
                 </div>
               </form>
@@ -1687,10 +1398,8 @@ function SupportTab() {
     queryFn: async () => {
       try {
         const status = statusFilter === "all" ? "" : statusFilter;
-        const res = await apiRequest(
-          "GET",
-          `/api/admin/support/tickets?status=${status}&page=${page}`
-        );
+        const res = await apiRequest("GET", `/api/admin/support/tickets?status=${status}&page=${page}`);
+
         return await res.json();
       } catch (error) {
         console.error("Error fetching tickets:", error);
@@ -1717,10 +1426,8 @@ function SupportTab() {
     queryFn: async () => {
       if (!selectedTicket) return null;
       try {
-        const res = await apiRequest(
-          "GET",
-          `/api/admin/support/tickets/${selectedTicket.id}`
-        );
+
+        const res = await apiRequest("GET", `/api/admin/support/tickets/${selectedTicket.id}`);
         return await res.json();
       } catch (error) {
         console.error("Error fetching ticket details:", error);
@@ -1736,18 +1443,9 @@ function SupportTab() {
 
   // Add reply mutation
   const addReply = useMutation({
-    mutationFn: async ({
-      ticketId,
-      message,
-    }: {
-      ticketId: number;
-      message: string;
-    }) => {
-      const res = await apiRequest(
-        "POST",
-        `/api/admin/support/tickets/${ticketId}/reply`,
-        { message, isAdmin: true }
-      );
+
+    mutationFn: async ({ ticketId, message }: { ticketId: number; message: string }) => {
+      const res = await apiRequest("POST", `/api/admin/support/tickets/${ticketId}/reply`, { message, isAdmin: true });
       return await res.json();
     },
     onSuccess: () => {
@@ -1770,18 +1468,9 @@ function SupportTab() {
 
   // Update ticket status mutation
   const updateStatus = useMutation({
-    mutationFn: async ({
-      ticketId,
-      status,
-    }: {
-      ticketId: number;
-      status: string;
-    }) => {
-      const res = await apiRequest(
-        "PATCH",
-        `/api/admin/support/tickets/${ticketId}/status`,
-        { status }
-      );
+    mutationFn: async ({ ticketId, status }: { ticketId: number; status: string }) => {
+      const res = await apiRequest("PATCH", `/api/admin/support/tickets/${ticketId}/status`, { status });
+
       return await res.json();
     },
     onSuccess: (data) => {
@@ -1837,37 +1526,33 @@ function SupportTab() {
     switch (status) {
       case "open":
         return (
-          <Badge
-            variant="outline"
-            className="bg-blue-50 text-blue-600 border-blue-200"
-          >
+
+          <Badge variant="outline" className="bg-blue-50 text-blue-600 border-blue-200">
+
             Open
           </Badge>
         );
       case "in-progress":
         return (
-          <Badge
-            variant="outline"
-            className="bg-yellow-50 text-yellow-600 border-yellow-200"
-          >
+
+          <Badge variant="outline" className="bg-yellow-50 text-yellow-600 border-yellow-200">
+
             In Progress
           </Badge>
         );
       case "resolved":
         return (
-          <Badge
-            variant="outline"
-            className="bg-green-50 text-green-600 border-green-200"
-          >
+
+          <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200">
+
             Resolved
           </Badge>
         );
       case "closed":
         return (
-          <Badge
-            variant="outline"
-            className="bg-gray-50 text-gray-600 border-gray-200"
-          >
+
+          <Badge variant="outline" className="bg-gray-50 text-gray-600 border-gray-200">
+
             Closed
           </Badge>
         );
@@ -1943,15 +1628,9 @@ function SupportTab() {
                     <TableCell>
                       <StatusBadge status={ticket.status} />
                     </TableCell>
-                    <TableCell>
-                      {new Date(ticket.updatedAt).toLocaleString()}
-                    </TableCell>
+                    <TableCell>{new Date(ticket.updatedAt).toLocaleString()}</TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleViewTicket(ticket)}
-                      >
+                      <Button variant="outline" size="sm" onClick={() => handleViewTicket(ticket)}>
                         View
                       </Button>
                     </TableCell>
@@ -1967,20 +1646,12 @@ function SupportTab() {
                 Showing page {page} of {ticketsData.pagination.totalPages}
               </div>
               <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setPage((p) => Math.max(p - 1, 1))}
-                  disabled={page === 1}
-                >
+
+                <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(p - 1, 1))} disabled={page === 1}>
                   Previous
                 </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setPage((p) => p + 1)}
-                  disabled={page >= ticketsData.pagination.totalPages}
-                >
+                <Button variant="outline" size="sm" onClick={() => setPage((p) => p + 1)} disabled={page >= ticketsData.pagination.totalPages}>
+
                   Next
                 </Button>
               </div>
@@ -1998,8 +1669,7 @@ function SupportTab() {
             // Clear state when dialog is closed
             setReplyMessage("");
           }
-        }}
-      >
+        }}>
         <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
           {selectedTicket && (
             <>
@@ -2009,9 +1679,7 @@ function SupportTab() {
                     <DialogTitle className="text-xl">
                       Ticket #{selectedTicket.id}: {selectedTicket.subject}
                     </DialogTitle>
-                    <DialogDescription>
-                      Submitted by {selectedTicket.username}
-                    </DialogDescription>
+                    <DialogDescription>Submitted by {selectedTicket.username}</DialogDescription>
                   </div>
                   <StatusBadge status={selectedTicket.status} />
                 </div>
@@ -2027,26 +1695,14 @@ function SupportTab() {
                     {/* Message history */}
                     <div className="space-y-4">
                       {ticketDetails?.messages.map((message: any) => (
-                        <div
-                          key={message.id}
-                          className={`p-4 rounded-lg ${
-                            message.isAdmin
-                              ? "bg-primary/10 ml-8"
-                              : "bg-muted mr-8"
-                          }`}
-                        >
+                        <div key={message.id} className={`p-4 rounded-lg ${message.isAdmin ? "bg-primary/10 ml-8" : "bg-muted mr-8"}`}>
                           <div className="flex justify-between items-center mb-2">
                             <div className="font-medium">
                               {message.username}
-                              {message.isAdmin && (
-                                <Badge className="ml-2 bg-blue-600">
-                                  Admin
-                                </Badge>
-                              )}
+                              {message.isAdmin && <Badge className="ml-2 bg-blue-600">Admin</Badge>}
+
                             </div>
-                            <div className="text-sm text-muted-foreground">
-                              {new Date(message.timestamp).toLocaleString()}
-                            </div>
+                            <div className="text-sm text-muted-foreground">{new Date(message.timestamp).toLocaleString()}</div>
                           </div>
                           <p className="whitespace-pre-line">
                             {message.message}
@@ -2061,73 +1717,45 @@ function SupportTab() {
                         <Label className="mb-2 block">Update Status</Label>
                         <div className="flex flex-wrap gap-2">
                           {selectedTicket.status !== "in-progress" && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleStatusChange("in-progress")}
-                              disabled={updateStatus.isPending}
-                            >
+
+                            <Button variant="outline" size="sm" onClick={() => handleStatusChange("in-progress")} disabled={updateStatus.isPending}>
+
                               Mark as In Progress
                             </Button>
                           )}
 
                           {selectedTicket.status !== "resolved" && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleStatusChange("resolved")}
-                              disabled={updateStatus.isPending}
-                            >
+
+                            <Button variant="outline" size="sm" onClick={() => handleStatusChange("resolved")} disabled={updateStatus.isPending}>
+
                               Mark as Resolved
                             </Button>
                           )}
 
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleStatusChange("closed")}
-                            disabled={updateStatus.isPending}
-                          >
+
+                          <Button variant="outline" size="sm" onClick={() => handleStatusChange("closed")} disabled={updateStatus.isPending}>
                             Close Ticket
                           </Button>
 
-                          {updateStatus.isPending && (
-                            <Loader2 className="h-4 w-4 animate-spin ml-2" />
-                          )}
+                          {updateStatus.isPending && <Loader2 className="h-4 w-4 animate-spin ml-2" />}
+
                         </div>
                       </div>
                     )}
 
                     {/* Reply form */}
                     {selectedTicket.status !== "closed" && (
-                      <form
-                        onSubmit={handleSendReply}
-                        className="border-t pt-4"
-                      >
+
+                      <form onSubmit={handleSendReply} className="border-t pt-4">
                         <Label htmlFor="reply" className="mb-2 block">
                           Reply
                         </Label>
-                        <Textarea
-                          id="reply"
-                          value={replyMessage}
-                          onChange={(e) => setReplyMessage(e.target.value)}
-                          placeholder="Type your reply here..."
-                          className="w-full h-32 mb-4"
-                          required
-                        />
+                        <Textarea id="reply" value={replyMessage} onChange={(e) => setReplyMessage(e.target.value)} placeholder="Type your reply here..." className="w-full h-32 mb-4" required />
 
                         <div className="flex justify-end">
-                          <Button
-                            type="submit"
-                            disabled={
-                              addReply.isPending || replyMessage.trim() === ""
-                            }
-                          >
-                            {addReply.isPending ? (
-                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            ) : (
-                              "Send Reply"
-                            )}
+                          <Button type="submit" disabled={addReply.isPending || replyMessage.trim() === ""}>
+                            {addReply.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Send Reply"}
+
                           </Button>
                         </div>
                       </form>
@@ -2164,10 +1792,9 @@ function SubscriptionsTab() {
     if (username.length >= 2) {
       setIsSearching(true);
       try {
-        const res = await apiRequest(
-          "GET",
-          `/api/admin/users/search?q=${encodeURIComponent(username)}`
-        );
+
+        const res = await apiRequest("GET", `/api/admin/users/search?q=${encodeURIComponent(username)}`);
+
         const data = await res.json();
         setSearchResults(data);
       } catch (error) {
@@ -2190,10 +1817,9 @@ function SubscriptionsTab() {
 
     // Fetch user's subscription status
     try {
-      const res = await apiRequest(
-        "GET",
-        `/api/admin/users/${user.id}/subscription`
-      );
+
+      const res = await apiRequest("GET", `/api/admin/users/${user.id}/subscription`);
+
       const data = await res.json();
       setUserSubscription(data.subscription);
     } catch (error) {
@@ -2214,11 +1840,9 @@ function SubscriptionsTab() {
         reason,
       };
 
-      const res = await apiRequest(
-        "POST",
-        "/api/admin/subscriptions/assign",
-        payload
-      );
+
+      const res = await apiRequest("POST", "/api/admin/subscriptions/assign", payload);
+
       return await res.json();
     },
     onSuccess: () => {
@@ -2252,11 +1876,9 @@ function SubscriptionsTab() {
     mutationFn: async () => {
       if (!selectedUser) throw new Error("No user selected");
 
-      const res = await apiRequest(
-        "DELETE",
-        `/api/admin/users/${selectedUser.id}/subscription`,
-        { reason: removeReason }
-      );
+
+      const res = await apiRequest("DELETE", `/api/admin/users/${selectedUser.id}/subscription`, { reason: removeReason });
+
       return await res.json();
     },
     onSuccess: () => {
@@ -2320,9 +1942,7 @@ function SubscriptionsTab() {
             <Crown className="h-5 w-5 mr-2 text-primary" />
             Manage User Subscriptions
           </CardTitle>
-          <CardDescription>
-            Search for a user to manage their subscription
-          </CardDescription>
+          <CardDescription>Search for a user to manage their subscription</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -2336,49 +1956,30 @@ function SubscriptionsTab() {
                   placeholder="Search by username"
                   className="flex-1"
                   onKeyDown={(e) => {
-                    if (
-                      e.key === "Enter" &&
-                      username.length >= 2 &&
-                      !isSearching
-                    ) {
+
+                    if (e.key === "Enter" && username.length >= 2 && !isSearching) {
+
                       e.preventDefault();
                       searchUsers();
                     }
                   }}
                 />
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={searchUsers}
-                  disabled={isSearching || username.length < 2}
-                >
-                  {isSearching ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Search className="h-4 w-4" />
-                  )}
+
+                <Button type="button" variant="outline" onClick={searchUsers} disabled={isSearching || username.length < 2}>
+                  {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
                 </Button>
               </div>
 
-              {username.length >= 2 &&
-                searchResults &&
-                searchResults.users &&
-                searchResults.users.length > 0 && (
-                  <div className="mt-2 border rounded-md max-h-40 overflow-y-auto">
-                    <div className="p-1">
-                      {searchResults.users.map((user: any) => (
-                        <div
-                          key={user.id}
-                          className="p-2 hover:bg-accent rounded-sm cursor-pointer flex items-center justify-between"
-                          onClick={() => handleSelectUser(user)}
-                        >
-                          <div className="flex items-center">
-                            <div>
-                              <div className="font-medium">{user.username}</div>
-                              <div className="text-xs text-muted-foreground">
-                                ID: {user.id}
-                              </div>
-                            </div>
+              {username.length >= 2 && searchResults && searchResults.users && searchResults.users.length > 0 && (
+                <div className="mt-2 border rounded-md max-h-40 overflow-y-auto">
+                  <div className="p-1">
+                    {searchResults.users.map((user: any) => (
+                      <div key={user.id} className="p-2 hover:bg-accent rounded-sm cursor-pointer flex items-center justify-between" onClick={() => handleSelectUser(user)}>
+                        <div className="flex items-center">
+                          <div>
+                            <div className="font-medium">{user.username}</div>
+                            <div className="text-xs text-muted-foreground">ID: {user.id}</div>
+
                           </div>
                           {user.subscriptionTier && (
                             <Badge className="ml-2 capitalize">
@@ -2386,8 +1987,11 @@ function SubscriptionsTab() {
                             </Badge>
                           )}
                         </div>
-                      ))}
-                    </div>
+
+                        {user.subscriptionTier && <Badge className="ml-2 capitalize">{user.subscriptionTier}</Badge>}
+                      </div>
+                    ))}
+
                   </div>
                 )}
             </div>
@@ -2418,41 +2022,23 @@ function SubscriptionsTab() {
                   <div className="space-y-4">
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
-                        <span className="text-muted-foreground">Status:</span>{" "}
-                        <Badge
-                          variant={
-                            userSubscription.status === "active"
-                              ? "default"
-                              : "outline"
-                          }
-                        >
-                          {userSubscription.status}
-                        </Badge>
+
+                        <span className="text-muted-foreground">Status:</span> <Badge variant={userSubscription.status === "active" ? "default" : "outline"}>{userSubscription.status}</Badge>
                       </div>
                       <div>
-                        <span className="text-muted-foreground">
-                          Start date:
-                        </span>{" "}
-                        {new Date(
-                          userSubscription.startDate
-                        ).toLocaleDateString()}
+                        <span className="text-muted-foreground">Start date:</span> {new Date(userSubscription.startDate).toLocaleDateString()}
                       </div>
                       {userSubscription.endDate && (
                         <div>
-                          <span className="text-muted-foreground">
-                            End date:
-                          </span>{" "}
-                          {new Date(
-                            userSubscription.endDate
-                          ).toLocaleDateString()}
+                          <span className="text-muted-foreground">End date:</span> {new Date(userSubscription.endDate).toLocaleDateString()}
+
                         </div>
                       )}
                     </div>
 
-                    <AlertDialog
-                      open={showRemoveDialog}
-                      onOpenChange={setShowRemoveDialog}
-                    >
+
+                    <AlertDialog open={showRemoveDialog} onOpenChange={setShowRemoveDialog}>
+
                       <AlertDialogTrigger asChild>
                         <Button variant="destructive" className="w-full">
                           Remove Subscription
@@ -2464,17 +2050,16 @@ function SubscriptionsTab() {
                             Remove Subscription
                           </AlertDialogTitle>
                           <AlertDialogDescription>
-                            Are you sure you want to remove the{" "}
-                            {userSubscription.tier} subscription from{" "}
-                            {selectedUser.username}? This action cannot be
-                            undone.
+
+                            Are you sure you want to remove the {userSubscription.tier} subscription from {selectedUser.username}? This action cannot be undone.
+
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <div className="space-y-4 py-4">
                           <div className="space-y-2">
-                            <Label htmlFor="removeReason">
-                              Reason (optional)
-                            </Label>
+
+                            <Label htmlFor="removeReason">Reason (optional)</Label>
+
                             <Textarea
                               id="removeReason"
                               value={removeReason}
@@ -2486,10 +2071,9 @@ function SubscriptionsTab() {
                         </div>
                         <AlertDialogFooter>
                           <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={handleRemoveSubscription}
-                            disabled={removeSubscription.isPending}
-                          >
+
+                          <AlertDialogAction onClick={handleRemoveSubscription} disabled={removeSubscription.isPending}>
+
                             {removeSubscription.isPending ? (
                               <>
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -2523,21 +2107,17 @@ function SubscriptionsTab() {
               <Crown className="h-5 w-5 mr-2 text-primary" />
               Assign Subscription
             </CardTitle>
-            <CardDescription>
-              Grant a subscription tier to {selectedUser.username} for a
-              specified duration
-            </CardDescription>
+
+            <CardDescription>Grant a subscription tier to {selectedUser.username} for a specified duration</CardDescription>
+
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="subscriptionTier">Subscription Tier</Label>
-                  <Select
-                    defaultValue={subscriptionTier}
-                    onValueChange={setSubscriptionTier}
-                    disabled={assignSubscription.isPending}
-                  >
+
+                  <Select defaultValue={subscriptionTier} onValueChange={setSubscriptionTier} disabled={assignSubscription.isPending}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select subscription tier" />
                     </SelectTrigger>
@@ -2551,11 +2131,9 @@ function SubscriptionsTab() {
 
                 <div className="space-y-2">
                   <Label htmlFor="durationMonths">Duration (months)</Label>
-                  <Select
-                    defaultValue={durationMonths}
-                    onValueChange={setDurationMonths}
-                    disabled={assignSubscription.isPending}
-                  >
+
+                  <Select defaultValue={durationMonths} onValueChange={setDurationMonths} disabled={assignSubscription.isPending}>
+
                     <SelectTrigger>
                       <SelectValue placeholder="Select duration" />
                     </SelectTrigger>
@@ -2581,11 +2159,9 @@ function SubscriptionsTab() {
                 />
               </div>
 
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={!selectedUser || assignSubscription.isPending}
-              >
+
+              <Button type="submit" className="w-full" disabled={!selectedUser || assignSubscription.isPending}>
+
                 {assignSubscription.isPending ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -2611,16 +2187,9 @@ function AnalyticsTab() {
   const { toast } = useToast();
   const [timeframe, setTimeframe] = useState("today");
 
-  const COLORS = [
-    "#0088FE",
-    "#00C49F",
-    "#FFBB28",
-    "#FF8042",
-    "#8884D8",
-    "#82CA9D",
-    "#FF6B6B",
-    "#747474",
-  ];
+
+  const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8", "#82CA9D", "#FF6B6B", "#747474"];
+
 
   const {
     data: analyticsData,
@@ -2630,10 +2199,9 @@ function AnalyticsTab() {
   } = useQuery({
     queryKey: ["/api/admin/analytics", timeframe],
     queryFn: async () => {
-      const res = await apiRequest(
-        "GET",
-        `/api/admin/analytics?timeframe=${timeframe}`
-      );
+
+      const res = await apiRequest("GET", `/api/admin/analytics?timeframe=${timeframe}`);
+
       return await res.json();
     },
   });
@@ -2692,9 +2260,7 @@ function AnalyticsTab() {
                     {analyticsData?.activeUsers || 0}
                   </div>
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Out of {analyticsData?.totalUsers || 0} total users
-                </p>
+                <p className="text-xs text-muted-foreground mt-1">Out of {analyticsData?.totalUsers || 0} total users</p>
               </CardContent>
             </UICard>
 
@@ -2711,9 +2277,9 @@ function AnalyticsTab() {
                     {formatCurrency(analyticsData?.coinsSpent || 0)}
                   </div>
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  In {timeframe === "today" ? "the last 24 hours" : timeframe}
-                </p>
+
+                <p className="text-xs text-muted-foreground mt-1">In {timeframe === "today" ? "the last 24 hours" : timeframe}</p>
+
               </CardContent>
             </UICard>
 
@@ -2731,13 +2297,9 @@ function AnalyticsTab() {
                   </div>
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Payout ratio:{" "}
-                  {analyticsData?.coinsSpent && analyticsData?.coinsEarned
-                    ? `${(
-                        (analyticsData.coinsEarned / analyticsData.coinsSpent) *
-                        100
-                      ).toFixed(1)}%`
-                    : "N/A"}
+
+                  Payout ratio: {analyticsData?.coinsSpent && analyticsData?.coinsEarned ? `${((analyticsData.coinsEarned / analyticsData.coinsSpent) * 100).toFixed(1)}%` : "N/A"}
+
                 </p>
               </CardContent>
             </UICard>
@@ -2751,13 +2313,11 @@ function AnalyticsTab() {
               <CardContent>
                 <div className="flex items-center">
                   <Activity className="h-5 w-5 text-purple-500 mr-2" />
-                  <div className="text-2xl font-bold capitalize">
-                    {analyticsData?.mostPlayedGame?.gameType || "N/A"}
-                  </div>
+
+                  <div className="text-2xl font-bold capitalize">{analyticsData?.mostPlayedGame?.gameType || "N/A"}</div>
+
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {analyticsData?.mostPlayedGame?.count || 0} plays
-                </p>
+                <p className="text-xs text-muted-foreground mt-1">{analyticsData?.mostPlayedGame?.count || 0} plays</p>
               </CardContent>
             </UICard>
           </div>
@@ -2783,21 +2343,12 @@ function AnalyticsTab() {
                         cy="50%"
                         outerRadius={80}
                         fill="#8884d8"
-                        label={({ gameType, percent }) =>
-                          `${gameType}: ${(percent * 100).toFixed(0)}%`
-                        }
-                      >
-                        {analyticsData.gameDistribution.map(
-                          (
-                            entry: { gameType: string; count: number },
-                            index: number
-                          ) => (
-                            <Cell
-                              key={`cell-${index}`}
-                              fill={COLORS[index % COLORS.length]}
-                            />
-                          )
-                        )}
+
+                        label={({ gameType, percent }) => `${gameType}: ${(percent * 100).toFixed(0)}%`}>
+                        {analyticsData.gameDistribution.map((entry: { gameType: string; count: number }, index: number) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+
                       </Pie>
                       <Tooltip formatter={(value, name) => [value, name]} />
                       <Legend />
@@ -2825,27 +2376,13 @@ function AnalyticsTab() {
                 {analyticsData?.subscriptionStats &&
                 analyticsData.subscriptionStats.length > 0 ? (
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      data={analyticsData.subscriptionStats}
-                      margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                    >
+                    <BarChart data={analyticsData.subscriptionStats} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="tier" />
                       <YAxis />
                       <Tooltip />
                       <Legend />
                       <Bar dataKey="count" name="Users" fill="#8884d8">
-                        {analyticsData.subscriptionStats.map(
-                          (
-                            entry: { tier: string; count: number },
-                            index: number
-                          ) => (
-                            <Cell
-                              key={`cell-${index}`}
-                              fill={COLORS[index % COLORS.length]}
-                            />
-                          )
-                        )}
                       </Bar>
                     </BarChart>
                   </ResponsiveContainer>
@@ -2871,37 +2408,14 @@ function AnalyticsTab() {
                 {analyticsData?.dailyNewUsers &&
                 analyticsData.dailyNewUsers.length > 0 ? (
                   <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart
-                      data={analyticsData.dailyNewUsers}
-                      margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-                    >
+                    <AreaChart data={analyticsData.dailyNewUsers} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis
-                        dataKey="date"
-                        tickFormatter={(date) =>
-                          new Date(date).toLocaleDateString(undefined, {
-                            month: "short",
-                            day: "numeric",
-                          })
-                        }
-                      />
+
+                      <XAxis dataKey="date" tickFormatter={(date) => new Date(date).toLocaleDateString(undefined, { month: "short", day: "numeric" })} />
                       <YAxis />
-                      <Tooltip
-                        labelFormatter={(date) =>
-                          new Date(date).toLocaleDateString(undefined, {
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                          })
-                        }
-                      />
-                      <Area
-                        type="monotone"
-                        dataKey="count"
-                        name="New Users"
-                        stroke="#8884d8"
-                        fill="#8884d8"
-                      />
+                      <Tooltip labelFormatter={(date) => new Date(date).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" })} />
+                      <Area type="monotone" dataKey="count" name="New Users" stroke="#8884d8" fill="#8884d8" />
+
                     </AreaChart>
                   </ResponsiveContainer>
                 ) : (
@@ -2926,30 +2440,13 @@ function AnalyticsTab() {
                 {analyticsData?.dailyTransactions &&
                 analyticsData.dailyTransactions.length > 0 ? (
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      data={analyticsData.dailyTransactions}
-                      margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                    >
+                    <BarChart data={analyticsData.dailyTransactions} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                       <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis
-                        dataKey="date"
-                        tickFormatter={(date) =>
-                          new Date(date).toLocaleDateString(undefined, {
-                            month: "short",
-                            day: "numeric",
-                          })
-                        }
-                      />
+
+                      <XAxis dataKey="date" tickFormatter={(date) => new Date(date).toLocaleDateString(undefined, { month: "short", day: "numeric" })} />
                       <YAxis />
-                      <Tooltip
-                        labelFormatter={(date) =>
-                          new Date(date).toLocaleDateString(undefined, {
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                          })
-                        }
-                      />
+                      <Tooltip labelFormatter={(date) => new Date(date).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" })} />
+
                       <Legend />
                       <Bar dataKey="bets" name="Total Bets" fill="#0088FE" />
                       <Bar dataKey="wins" name="Wins" fill="#00C49F" />
@@ -2994,33 +2491,22 @@ function BanAppealsTab() {
       }
       queryParams.append("page", page.toString());
 
-      const res = await apiRequest(
-        "GET",
-        `/api/admin/ban-appeals?${queryParams.toString()}`
-      );
+
+      const res = await apiRequest("GET", `/api/admin/ban-appeals?${queryParams.toString()}`);
+
       return await res.json();
     },
   });
 
   // Respond to appeal mutation
   const respondToAppeal = useMutation({
-    mutationFn: async ({
-      appealId,
-      status,
-      response,
-    }: {
-      appealId: number;
-      status: string;
-      response: string;
-    }) => {
-      const res = await apiRequest(
-        "POST",
-        `/api/admin/ban-appeals/${appealId}/respond`,
-        {
-          status,
-          response,
-        }
-      );
+
+    mutationFn: async ({ appealId, status, response }: { appealId: number; status: string; response: string }) => {
+      const res = await apiRequest("POST", `/api/admin/ban-appeals/${appealId}/respond`, {
+        status,
+        response,
+      });
+
       return await res.json();
     },
     onSuccess: () => {
@@ -3054,8 +2540,7 @@ function BanAppealsTab() {
     if (responseText.trim().length < 10) {
       toast({
         title: "Error",
-        description:
-          "Please provide a detailed response (minimum 10 characters)",
+        description: "Please provide a detailed response (minimum 10 characters)",
         variant: "destructive",
       });
       return;
@@ -3095,10 +2580,9 @@ function BanAppealsTab() {
       case "pending":
       default:
         return (
-          <Badge
-            variant="outline"
-            className="bg-yellow-50 text-yellow-700 border-yellow-200"
-          >
+
+          <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
+
             Pending
           </Badge>
         );
@@ -3133,8 +2617,7 @@ function BanAppealsTab() {
             onValueChange={(value) => {
               setStatusFilter(value);
               setPage(1); // Reset to first page when filter changes
-            }}
-          >
+            }}>
             <SelectTrigger id="status-filter" className="w-[180px]">
               <SelectValue placeholder="Select status" />
             </SelectTrigger>
@@ -3176,24 +2659,14 @@ function BanAppealsTab() {
                 appealsData?.appeals.map((appeal: BanAppeal) => (
                   <TableRow key={appeal.id}>
                     <TableCell>{appeal.id}</TableCell>
-                    <TableCell>
-                      {appeal.user?.username || `User #${appeal.userId}`}
-                    </TableCell>
-                    <TableCell className="max-w-[300px] truncate">
-                      {appeal.reason}
-                    </TableCell>
+                    <TableCell>{appeal.user?.username || `User #${appeal.userId}`}</TableCell>
+                    <TableCell className="max-w-[300px] truncate">{appeal.reason}</TableCell>
                     <TableCell>{getStatusBadge(appeal.status)}</TableCell>
-                    <TableCell>
-                      {new Date(appeal.createdAt).toLocaleDateString()}
-                    </TableCell>
+                    <TableCell>{new Date(appeal.createdAt).toLocaleDateString()}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleOpenResponseDialog(appeal)}
-                          disabled={appeal.status !== "pending"}
-                        >
+                        <Button variant="outline" size="sm" onClick={() => handleOpenResponseDialog(appeal)} disabled={appeal.status !== "pending"}>
+
                           <MessagesSquare className="h-4 w-4" />
                         </Button>
                       </div>
@@ -3211,20 +2684,10 @@ function BanAppealsTab() {
                 Showing page {page} of {appealsData.pagination.totalPages}
               </div>
               <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handlePrevPage}
-                  disabled={page === 1}
-                >
+                <Button variant="outline" size="sm" onClick={handlePrevPage} disabled={page === 1}>
                   Previous
                 </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleNextPage}
-                  disabled={page >= appealsData.pagination.totalPages}
-                >
+                <Button variant="outline" size="sm" onClick={handleNextPage} disabled={page >= appealsData.pagination.totalPages}>
                   Next
                 </Button>
               </div>
@@ -3241,26 +2704,21 @@ function BanAppealsTab() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Respond to Ban Appeal</DialogTitle>
-            <DialogDescription>
-              Review the appeal and provide a response to the user.
-            </DialogDescription>
+            <DialogDescription>Review the appeal and provide a response to the user.</DialogDescription>
           </DialogHeader>
 
           {selectedAppeal && (
             <div className="space-y-4">
               <div>
                 <Label>User</Label>
-                <div className="font-semibold">
-                  {selectedAppeal.user?.username ||
-                    `User #${selectedAppeal.userId}`}
-                </div>
+
+                <div className="font-semibold">{selectedAppeal.user?.username || `User #${selectedAppeal.userId}`}</div>
+
               </div>
 
               <div>
                 <Label>Appeal</Label>
-                <div className="p-3 bg-muted rounded-md mt-1">
-                  {selectedAppeal.reason}
-                </div>
+                <div className="p-3 bg-muted rounded-md mt-1">{selectedAppeal.reason}</div>
               </div>
 
               <div>
@@ -3275,11 +2733,7 @@ function BanAppealsTab() {
                   className="mt-1"
                   rows={5}
                 />
-                {respondToAppeal.error && responseText.trim().length < 10 && (
-                  <p className="text-sm text-red-500 mt-1">
-                    Response is required and must be at least 10 characters
-                  </p>
-                )}
+                {respondToAppeal.error && responseText.trim().length < 10 && <p className="text-sm text-red-500 mt-1">Response is required and must be at least 10 characters</p>}
               </div>
 
               <div className="flex justify-end gap-2 pt-4">
@@ -3289,32 +2743,16 @@ function BanAppealsTab() {
                     setIsResponseDialogOpen(false);
                     setResponseText("");
                   }}
-                  disabled={respondToAppeal.isPending}
-                >
+                  disabled={respondToAppeal.isPending}>
                   Cancel
                 </Button>
-                <Button
-                  variant="destructive"
-                  onClick={() => handleSubmitResponse("rejected")}
-                  disabled={
-                    respondToAppeal.isPending || responseText.trim().length < 10
-                  }
-                >
-                  {respondToAppeal.isPending ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : null}
+                <Button variant="destructive" onClick={() => handleSubmitResponse("rejected")} disabled={respondToAppeal.isPending || responseText.trim().length < 10}>
+                  {respondToAppeal.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                   Reject Appeal
                 </Button>
-                <Button
-                  variant="default"
-                  onClick={() => handleSubmitResponse("approved")}
-                  disabled={
-                    respondToAppeal.isPending || responseText.trim().length < 10
-                  }
-                >
-                  {respondToAppeal.isPending ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : null}
+                <Button variant="default" onClick={() => handleSubmitResponse("approved")} disabled={respondToAppeal.isPending || responseText.trim().length < 10}>
+                  {respondToAppeal.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+
                   Approve & Unban
                 </Button>
               </div>
@@ -3344,10 +2782,9 @@ function PasswordsTab() {
     queryKey: ["/api/admin/users/search", searchTerm],
     queryFn: async () => {
       if (!searchTerm || searchTerm.length < 2) return { users: [] };
-      const res = await apiRequest(
-        "GET",
-        `/api/admin/users/search?q=${encodeURIComponent(searchTerm)}`
-      );
+
+      const res = await apiRequest("GET", `/api/admin/users/search?q=${encodeURIComponent(searchTerm)}`);
+
       return await res.json();
     },
     enabled: searchTerm.length >= 2,
@@ -3355,18 +2792,8 @@ function PasswordsTab() {
 
   // Reset password mutation
   const resetPassword = useMutation({
-    mutationFn: async ({
-      userId,
-      newPassword,
-    }: {
-      userId: number;
-      newPassword: string;
-    }) => {
-      const res = await apiRequest(
-        "POST",
-        `/api/admin/users/${userId}/reset-password`,
-        { newPassword }
-      );
+    mutationFn: async ({ userId, newPassword }: { userId: number; newPassword: string }) => {
+      const res = await apiRequest("POST", `/api/admin/users/${userId}/reset-password`, { newPassword });
       return await res.json();
     },
     onSuccess: () => {
@@ -3435,13 +2862,7 @@ function PasswordsTab() {
     <div>
       <div className="mb-6">
         <form onSubmit={handleSearch} className="flex gap-2">
-          <Input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search users by username..."
-            className="flex-1"
-          />
+          <Input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="Search users by username..." className="flex-1" />
           <Button type="submit" disabled={isSearching || searchTerm.length < 2}>
             {isSearching ? (
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -3482,12 +2903,8 @@ function PasswordsTab() {
                     <TableCell>{user.id}</TableCell>
                     <TableCell>
                       {user.username}
-                      {user.isOwner && (
-                        <Badge className="ml-2 bg-purple-600">Owner</Badge>
-                      )}
-                      {user.isAdmin && !user.isOwner && (
-                        <Badge className="ml-2 bg-blue-600">Admin</Badge>
-                      )}
+                      {user.isOwner && <Badge className="ml-2 bg-purple-600">Owner</Badge>}
+                      {user.isAdmin && !user.isOwner && <Badge className="ml-2 bg-blue-600">Admin</Badge>}
                     </TableCell>
                     <TableCell>
                       {user.isBanned ? (
@@ -3502,11 +2919,7 @@ function PasswordsTab() {
                       )}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleResetPassword(user)}
-                      >
+                      <Button variant="outline" size="sm" onClick={() => handleResetPassword(user)}>
                         <Key className="h-4 w-4 mr-2" />
                         Reset Password
                       </Button>
@@ -3524,9 +2937,7 @@ function PasswordsTab() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Reset User Password</DialogTitle>
-            <DialogDescription>
-              Enter a new password for {selectedUser?.username}.
-            </DialogDescription>
+            <DialogDescription>Enter a new password for {selectedUser?.username}.</DialogDescription>
           </DialogHeader>
 
           {selectedUser && (
@@ -3540,19 +2951,8 @@ function PasswordsTab() {
                 <Label htmlFor="newPassword" className="text-sm font-medium">
                   New Password <span className="text-red-500">*</span>
                 </Label>
-                <Input
-                  id="newPassword"
-                  type="password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  className="mt-1"
-                  placeholder="Enter new password"
-                />
-                {newPassword && newPassword.length < 6 && (
-                  <p className="text-sm text-red-500 mt-1">
-                    Password must be at least 6 characters long
-                  </p>
-                )}
+                <Input id="newPassword" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="mt-1" placeholder="Enter new password" />
+                {newPassword && newPassword.length < 6 && <p className="text-sm text-red-500 mt-1">Password must be at least 6 characters long</p>}
               </div>
 
               <div>
@@ -3562,19 +2962,8 @@ function PasswordsTab() {
                 >
                   Confirm Password <span className="text-red-500">*</span>
                 </Label>
-                <Input
-                  id="confirmPassword"
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="mt-1"
-                  placeholder="Confirm new password"
-                />
-                {confirmPassword && newPassword !== confirmPassword && (
-                  <p className="text-sm text-red-500 mt-1">
-                    Passwords do not match
-                  </p>
-                )}
+                <Input id="confirmPassword" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="mt-1" placeholder="Confirm new password" />
+                {confirmPassword && newPassword !== confirmPassword && <p className="text-sm text-red-500 mt-1">Passwords do not match</p>}
               </div>
 
               <div className="flex justify-end gap-2 pt-4">
@@ -3585,20 +2974,12 @@ function PasswordsTab() {
                     setNewPassword("");
                     setConfirmPassword("");
                   }}
-                  disabled={resetPassword.isPending}
-                >
+                  disabled={resetPassword.isPending}>
                   Cancel
                 </Button>
-                <Button
-                  variant="default"
-                  onClick={handleSubmitPasswordReset}
-                  disabled={
-                    resetPassword.isPending ||
-                    !newPassword ||
-                    newPassword.length < 6 ||
-                    newPassword !== confirmPassword
-                  }
-                >
+
+                <Button variant="default" onClick={handleSubmitPasswordReset} disabled={resetPassword.isPending || !newPassword || newPassword.length < 6 || newPassword !== confirmPassword}>
+
                   {resetPassword.isPending ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -3620,98 +3001,728 @@ function PasswordsTab() {
   );
 }
 
-// export default function AdminPage() {
-//   const { user } = useAuth();
-//   const [activeTab, setActiveTab] = useState("analytics");
 
-//   if (!user) return <Redirect to="/auth" />;
-//   if (!user.isAdmin) return <Redirect to="/" />;
+// Define interfaces for type safety
+interface LeaderboardEntry {
+  userId: string;
+  username: string;
+  totalGamesPlayed: number;
+  totalWins: number;
+  totalLosses: number;
+  currentScore: number;
+  totalEarnings: number;
+}
 
-//   const isOwner = user.isOwner;
+interface BettingStats {
+  totalPlayers: number;
+  highestPlayer: {
+    userId: string;
+    totalBets: number;
+  };
+  averageRanking: number;
+}
 
-//   const sidebarItems = [
-//     { key: "analytics", label: "Analytics", icon: BarChart3 },
-//     { key: "users", label: "Users", icon: UserCog },
-//     { key: "transactions", label: "Transactions", icon: History },
-//     { key: "announcements", label: "Announcements", icon: Megaphone },
-//     { key: "support", label: "Support", icon: LifeBuoy },
-//     { key: "ban-appeals", label: "Ban Appeals", icon: MessagesSquare },
-//     { key: "coins", label: "Coins", icon: CoinsIcon },
-//     { key: "bonuses", label: "Bonuses", icon: Gift },
-//     { key: "gameconfig", label: "Game Config", icon: Settings },
-//     { key: "subscriptions", label: "Subscriptions", icon: Crown },
-//     { key: "passwords", label: "Passwords", icon: Lock },
-//   ];
+interface OverviewStat {
+  name: string;
+  value: string | number;
+}
 
-//   const renderTabContent = () => {
-//     switch (activeTab) {
-//       case "analytics":
-//         return <AnalyticsTab />;
-//       case "users":
-//         return <UsersTab />;
-//       case "coins":
-//         return <CoinsTab />;
-//       case "bonuses":
-//         return <BonusesTab />;
-//       case "announcements":
-//         return <AnnouncementsTab />;
-//       case "gameconfig":
-//         return <GameConfigTab />;
-//       case "support":
-//         return <SupportTab />;
-//       case "subscriptions":
-//         return <SubscriptionsTab />;
-//       case "ban-appeals":
-//         return <BanAppealsTab />;
-//       case "passwords":
-//         return <PasswordsTab />;
-//       case "transactions":
-//         return (
-//           <div className="text-center p-12 text-muted-foreground">
-//             <h3 className="text-lg font-medium mb-2">Coming Soon</h3>
-//             <p>Transaction management features will be available soon.</p>
-//           </div>
-//         );
-//       default:
-//         return null;
-//     }
-//   };
+// Transform JSON data into OverviewStat format
+const transformBettingStats = (data: BettingStats): OverviewStat[] => [
+  { name: "Total Players", value: data.totalPlayers },
+  { name: "Top Player", value: `${data.highestPlayer.userId} - ${data.highestPlayer.totalBets} bets` },
+  { name: "Average Ranking", value: data.averageRanking },
+];
 
-//   return (
-//     <div className="flex min-h-screen bg-black">
-//       {/* Sidebar */}
-//       <aside className="w-64 h-screen fixed top-0 left-0 bg-black shadow-md p-6 space-y-6 border-r-2 overflow-y-auto">
-//         <div>
-//           <Link to="/">
-//             <img src={logo} alt="Logo" className="h-20 w-auto" />
-//           </Link>
+// Component for the leaderboard tab
+function LeaderboardTab() {
+  const queryClient = useQueryClient();
+  const [page, setPage] = useState(1);
 
-//           <h2 className="text-xl font-bold">Admin Panel</h2>
-//           <p className="text-sm text-muted-foreground">Manage system settings</p>
-//           {!isOwner && <p className="text-xs text-amber-500 mt-2">Some tabs are only for owners</p>}
-//         </div>
+  // Fetch overview stats
+  const {
+    data: rawStatsData,
+    isLoading: isStatsLoading,
+    error: statsError,
+  } = useQuery({
+    queryKey: ["/api/admin/betoverview"],
+    queryFn: async () => {
+      const res = await apiRequest("GET", "/api/admin/betoverview");
+      return await res.json();
+    },
+    // Remove mock data and enable query when API is available
+    enabled: true, // Enable this when you have a real API
+  });
+  const statsData = rawStatsData ? transformBettingStats(rawStatsData) : [];
 
-//         <nav className="space-y-2 ">
-//           {sidebarItems.map(({ key, label, icon: Icon }) => (
-//             <button
-//               key={key}
-//               onClick={() => setActiveTab(key)}
-//               className={`w-full flex items-center gap-2 px-4 py-2 rounded-md text-left text-sm font-medium
-//         text-gray-400 hover:bg-white/10
-//         ${activeTab === key ? "bg-purple-900/20 text-purple-600 " : ""}
-//       `}>
-//               <Icon className={`h-4 w-4 hover:text-white ${activeTab === key ? "text-purple-600" : " text-gray-400"}`} />
-//               {label}
-//             </button>
-//           ))}
-//         </nav>
-//       </aside>
+  // Fetch leaderboard data
+  const {
+    data: leaderboardData,
+    isLoading: isLeaderboardLoading,
+    error: leaderboardError,
+  } = useQuery({
+    queryKey: ["/api/admin/leaderboard"],
+    queryFn: async () => {
+      const res = await apiRequest("GET", `/api/games/leaderboard`);
+      return await res.json();
+    },
+  });
 
-//       {/* Main Content */}
-//       <main className="flex-1 p-8 pl-80">{renderTabContent()}</main>
-//     </div>
-//   );
-// }
+  // Pagination controls
+  const handleNextPage = () => {
+    if (leaderboardData && page < leaderboardData.pagination.totalPages) {
+      setPage(page + 1);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (page > 1) {
+      setPage(page - 1);
+    }
+  };
+
+  // Leaderboard entries to render
+
+  const entriesToRender = leaderboardData || [];
+
+  if (leaderboardError || statsError) {
+    return (
+      <div className="text-center p-8">
+        <p className="text-red-500">Error loading data: {(leaderboardError || statsError)?.message || "Unknown error"}</p>
+        <Button
+          onClick={() => {
+            queryClient.refetchQueries({ queryKey: ["/api/games/leaderboard"] });
+            queryClient.refetchQueries({ queryKey: ["/api/admin/betoverview"] });
+          }}
+          className="mt-4">
+          <RefreshCw className="mr-2 h-4 w-4" />
+          Retry
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-6">
+      <h1 className="font-jua text-xl mb-2">Leaderboard Management</h1>
+      <div className="text-sm text-muted-foreground mb-6">Manage Global Leaderboard</div>
+
+      {/* Betting Overview */}
+      <div className="mb-6">
+        <div className="font-jua text-lg mb-2">Betting Overview</div>
+        {isStatsLoading ? (
+          <div className="flex justify-center p-4">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {statsData.map((item: OverviewStat, index: number) => (
+              <div key={index} className="bg-light_blue p-4 rounded-md border border-gray-300">
+                <div className="font-jua text-gray-500">{item.name}</div>
+                <div className="text-2xl font-bold">{item.value}</div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Leaderboard Table */}
+      <div className="mb-6">
+        <div className="font-jua text-lg mb-4">Leaderboard Table</div>
+        {isLeaderboardLoading ? (
+          <div className="flex justify-center p-8">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        ) : (
+          <>
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-dark text-white">
+                  <TableHead className="p-4 font-jua">Rank</TableHead>
+                  <TableHead className="p-4 font-jua">Player Name</TableHead>
+                  <TableHead className="p-4 font-jua">User ID</TableHead>
+                  <TableHead className="p-4 font-jua">Total Games Played</TableHead>
+                  <TableHead className="p-4 font-jua">Wins/Losses</TableHead>
+                  <TableHead className="p-4 font-jua">Points</TableHead>
+                  <TableHead className="p-4 font-jua text-center">Earnings</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {entriesToRender.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-8 text-white">
+                      No leaderboard entries found
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  entriesToRender.map((entry: LeaderboardEntry, index: number) => (
+                    <TableRow key={entry.userId} className={`${index % 2 ? "bg-light_blue" : ""} text-white hover:bg-dark_blue`}>
+                      <TableCell className="p-4">{index + 1 + (page - 1) * 10}</TableCell>
+                      <TableCell className="p-4">{entry.username}</TableCell>
+                      <TableCell className="p-4">{entry.userId}</TableCell>
+                      <TableCell className="p-4">{entry.totalGamesPlayed}</TableCell>
+                      <TableCell className="p-4">
+                        {entry.totalWins}/{entry.totalLosses}
+                      </TableCell>
+                      <TableCell className="p-4">{entry.currentScore}</TableCell>
+                      <TableCell className="p-4 text-center">{formatCurrency(entry.totalEarnings)}</TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+
+            {/* Pagination */}
+            {leaderboardData && leaderboardData.pagination && (
+              <div className="flex justify-between items-center mt-4">
+                <div className="text-sm text-muted-foreground">
+                  Showing page {page} of {leaderboardData.pagination.totalPages}
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={handlePrevPage} disabled={page === 1} aria-label="Previous page">
+                    Previous
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={handleNextPage} disabled={page >= leaderboardData.pagination.totalPages} aria-label="Next page">
+                    Next
+                  </Button>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+const compressImageUpload = async (file: any, maxSize: any) => URL.createObjectURL(file);
+
+const ICONS = {
+  facebook: "https://via.placeholder.com/24",
+  instagram: "https://via.placeholder.com/24",
+  twitter: "https://via.placeholder.com/24",
+};
+
+const getBrandingDetails = async () => ({
+  siteName: "99wiwi",
+  logoUrl: "https://via.placeholder.com/150",
+  faviconUrl: "https://via.placeholder.com/32",
+  themeColor: "#FF6B6B",
+  timezone: "UTC",
+  language: "en",
+  fontFamily: "Roboto",
+  fontSize: "16",
+  headingStyle: "bold",
+  aboutUs: "Welcome to 99wiwi, your premier gaming platform!",
+  quickLinks: "Home\nGames\nLeaderboard\nFAQ",
+  socialMedia: { facebook: "", instagram: "", twitter: "" },
+  legalPages: "Terms\nPrivacy",
+  copyright: "© 2025 99wiwi",
+  widgetBlocks: ["Real-Time Gaming", "Secure Transactions", "Exclusive Rewards", "24/7 Support"],
+  navigationMenu: ["Home", "Games", "Leaderboard", "FAQ"],
+});
+
+const updateBrandingDetails = async (updates: any) => ({
+  branding: { ...(await getBrandingDetails()), ...updates },
+});
+
+type BrandingData = {
+  siteName: string;
+  logoUrl: string;
+  faviconUrl: string;
+  themeColor: string;
+  timezone: string;
+  language: string;
+  fontFamily: string;
+  fontSize: string;
+  headingStyle: string;
+  aboutUs: string;
+  quickLinks: string;
+  socialMedia: {
+    facebook: string;
+    instagram: string;
+    twitter: string;
+  };
+  legalPages: string;
+  copyright: string;
+  widgetBlocks: string[];
+  navigationMenu: string[]; // make sure this is string[]
+};
+
+// BrandingTab Component
+function BrandingTab() {
+  const { toast } = useToast();
+  const [brandingData, setBrandingData] = useState<BrandingData>({
+    siteName: "",
+    logoUrl: "",
+    faviconUrl: "",
+    themeColor: "#FF6B6B",
+    timezone: "",
+    language: "",
+    fontFamily: "",
+    fontSize: "",
+    headingStyle: "",
+    aboutUs: "",
+    quickLinks: "",
+    socialMedia: { facebook: "", instagram: "", twitter: "" },
+    legalPages: "",
+    copyright: "",
+    widgetBlocks: ["", "", "", ""],
+    navigationMenu: [],
+  });
+  const [newNavItem, setNewNavItem] = useState("");
+
+  // Fetch branding data
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: ["/api/admin/branding"],
+    queryFn: async () => {
+      const res = await getBrandingDetails();
+      return res;
+    },
+  });
+
+  useEffect(() => {
+    if (data) {
+      setBrandingData({
+        siteName: data.siteName || "",
+        logoUrl: data.logoUrl || "",
+        faviconUrl: data.faviconUrl || "",
+        themeColor: data.themeColor || "#FF6B6B",
+        timezone: data.timezone || "",
+        language: data.language || "",
+        fontFamily: data.fontFamily || "",
+        fontSize: data.fontSize || "",
+        headingStyle: data.headingStyle || "",
+        aboutUs: data.aboutUs || "",
+        quickLinks: data.quickLinks || "",
+        socialMedia: data.socialMedia || { facebook: "", instagram: "", twitter: "" },
+        legalPages: data.legalPages || "",
+        copyright: data.copyright || "",
+        widgetBlocks: data.widgetBlocks || ["", "", "", ""],
+        navigationMenu: data.navigationMenu || [],
+      });
+    }
+  }, [data]);
+
+  // Update branding data
+  const updateBranding = useMutation({
+    mutationFn: async (updatedData: BrandingData) => {
+      const res = await updateBrandingDetails(updatedData);
+      return res.branding;
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Branding settings updated successfully",
+      });
+      refetch();
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: `Failed to update branding settings: ${error.message}`,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Handle form changes
+  const handleChange = (e: any) => {
+    const { name, value } = e.target;
+    if (name.startsWith("socialMedia.")) {
+      const [, platform] = name.split(".");
+      setBrandingData((prev) => ({
+        ...prev,
+        socialMedia: { ...prev.socialMedia, [platform]: value },
+      }));
+    } else if (name.startsWith("widgetBlocks.")) {
+      const index = parseInt(name.split(".")[1], 10);
+      setBrandingData((prev) => {
+        const newWidgetBlocks = [...prev.widgetBlocks];
+        newWidgetBlocks[index] = value;
+        return { ...prev, widgetBlocks: newWidgetBlocks };
+      });
+    } else {
+      setBrandingData((prev) => ({ ...prev, [name]: value }));
+    }
+  };
+
+  const handleImageUpload = async (e: any, field: any) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const imageUrl = await compressImageUpload(file, 2048);
+      setBrandingData((prev) => ({ ...prev, [field]: imageUrl }));
+      toast({ description: "Image uploaded successfully" });
+    } catch (error) {
+      toast({ description: "Image upload failed", variant: "destructive" });
+    }
+  };
+
+  const handleAddNavItem = () => {
+    if (newNavItem.trim()) {
+      setBrandingData((prev) => ({
+        ...prev,
+        navigationMenu: [...prev.navigationMenu, newNavItem.trim()],
+      }));
+      setNewNavItem("");
+      toast({ description: "Navigation item added" });
+    }
+  };
+
+  const handleRemoveNavItem = (index: any) => {
+    setBrandingData((prev) => ({
+      ...prev,
+      navigationMenu: prev.navigationMenu.filter((_, i) => i !== index),
+    }));
+    toast({ description: "Navigation item removed" });
+  };
+
+  // Handle form submission
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    updateBranding.mutate(brandingData);
+  };
+
+  if (isLoading) {
+    return <div className="text-center p-8">Loading...</div>;
+  }
+
+  if (error) {
+    return (
+      <div className="text-center p-8">
+        <p className="text-red-500">Error loading branding settings: {error.message}</p>
+        <Button onClick={() => refetch()} className="mt-4 pr text-black hover:bg-yellow-400">
+          Retry
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-6 md:p-8 max-w-7xl mx-auto rounded-md border border-gray-30 text-white">
+      <h2 className="text-2xl font-bold mb-6">Site Branding</h2>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* General Branding */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div>
+            <label htmlFor="siteName" className="block text-gray-500 text-sm font-medium mb-2">
+              Site Name
+            </label>
+            <Input id="siteName" type="text" name="siteName" value={brandingData.siteName} onChange={handleChange} placeholder="Enter site name" />
+          </div>
+          <div>
+            <label htmlFor="logoUrl" className="block text-gray-500 text-sm font-medium mb-2">
+              Logo URL
+            </label>
+            <div className="relative">
+              <Input id="logoUrl" type="text" name="logoUrl" value={brandingData.logoUrl} onChange={handleChange} placeholder="Enter logo URL" />
+              <label htmlFor="logo-upload" className="absolute top-1/2 right-2 -translate-y-1/2 px-3 py-1 bg-primary  text-white text-xs rounded-full cursor-pointer hover:bg-primary/90 ">
+                Upload
+                <input id="logo-upload" type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e, "logoUrl")} />
+              </label>
+            </div>
+          </div>
+          <div>
+            <label htmlFor="faviconUrl" className="block text-gray-500 text-sm font-medium mb-2">
+              Favicon URL
+            </label>
+            <div className="relative">
+              <Input id="faviconUrl" type="text" name="faviconUrl" value={brandingData.faviconUrl} onChange={handleChange} placeholder="Enter favicon URL" />
+              <label htmlFor="favicon-upload" className="absolute top-1/2 right-2 -translate-y-1/2 px-3 py-1 bg-primary text-white text-xs rounded-full cursor-pointer hover:bg-primary/90 ">
+                Upload
+                <input id="favicon-upload" type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e, "faviconUrl")} />
+              </label>
+            </div>
+          </div>
+          <div>
+            <label htmlFor="themeColor" className="block text-gray-500 text-sm font-medium mb-2">
+              Theme Color
+            </label>
+            <div className="flex items-center gap-2">
+              <Input id="themeColor" type="color" name="themeColor" value={brandingData.themeColor} onChange={handleChange} className="w-10 h-10 p-1" />
+              <Input type="text" value={brandingData.themeColor} onChange={handleChange} name="themeColor" placeholder="#FF6B6B" />
+            </div>
+          </div>
+          <div>
+            <label htmlFor="timezone" className="block text-gray-500 text-sm font-medium mb-2">
+              Timezone
+            </label>
+            <Select value={brandingData.timezone} onValueChange={(value) => setBrandingData((prev) => ({ ...prev, timezone: value }))}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select timezone" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="UTC">UTC</SelectItem>
+                <SelectItem value="GMT">GMT</SelectItem>
+                <SelectItem value="EST">EST</SelectItem>
+                <SelectItem value="PST">PST</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <label htmlFor="language" className="block  text-gray-500 text-sm font-medium mb-2">
+              Default Language
+            </label>
+            <Select value={brandingData.language} onValueChange={(value) => setBrandingData((prev) => ({ ...prev, language: value }))}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select language" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="en">English</SelectItem>
+                <SelectItem value="es">Spanish</SelectItem>
+                <SelectItem value="fr">French</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        {/* Navigation Menu */}
+        <div className="border-t border-gray-700 pt-6">
+          <h3 className="text-xl font-semibold mb-4">Navigation Menu</h3>
+          <div className="space-y-4">
+            <div className="flex flex-wrap gap-2 items-center">
+              {brandingData.navigationMenu.map((item, index) => (
+                <div key={index} className="flex items-center gap-2 p-2 bg-gray-700 rounded-lg min-w-[100px]">
+                  <span>{item}</span>
+                  <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleRemoveNavItem(index)}>
+                    <i className="fa fa-trash text-red-500"></i>
+                  </Button>
+                </div>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <Input type="text" value={newNavItem} onChange={(e) => setNewNavItem(e.target.value)} placeholder="Enter new menu item" />
+              <Button onClick={handleAddNavItem} disabled={!newNavItem.trim()}>
+                Add Item
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* Typography */}
+        <div className="border-t border-gray-700 pt-6">
+          <h3 className="text-xl font-semibold mb-4">Typography</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div>
+              <label htmlFor="fontFamily" className="block text-gray-500 text-sm font-medium mb-2">
+                Font Family
+              </label>
+              <Select value={brandingData.fontFamily} onValueChange={(value) => setBrandingData((prev) => ({ ...prev, fontFamily: value }))}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select font" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Roboto">Roboto</SelectItem>
+                  <SelectItem value="Arial">Arial</SelectItem>
+                  <SelectItem value="Verdana">Verdana</SelectItem>
+                  <SelectItem value="Times New Roman">Times New Roman</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label htmlFor="fontSize" className="block  text-gray-500 text-sm font-medium mb-2">
+                Font Size
+              </label>
+              <Select value={brandingData.fontSize} onValueChange={(value) => setBrandingData((prev) => ({ ...prev, fontSize: value }))}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select size" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="12">12px</SelectItem>
+                  <SelectItem value="14">14px</SelectItem>
+                  <SelectItem value="16">16px</SelectItem>
+                  <SelectItem value="18">18px</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label htmlFor="headingStyle" className="block  text-gray-500 text-sm font-medium mb-2">
+                Heading Style
+              </label>
+              <Select value={brandingData.headingStyle} onValueChange={(value) => setBrandingData((prev) => ({ ...prev, headingStyle: value }))}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select style" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="bold">Bold</SelectItem>
+                  <SelectItem value="italic">Italic</SelectItem>
+                  <SelectItem value="underline">Underline</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer Customization */}
+        <div className="border-t border-gray-700 pt-6">
+          <h3 className="text-xl font-semibold mb-4">Footer Customization</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label htmlFor="aboutUs" className="block  text-gray-500 text-sm font-medium mb-2">
+                About Us
+              </label>
+              <Textarea id="aboutUs" name="aboutUs" value={brandingData.aboutUs} onChange={handleChange} placeholder="Write about 99wiwi" className="h-32" />
+            </div>
+            <div>
+              <label htmlFor="quickLinks" className="block  text-gray-500 text-sm font-medium mb-2">
+                Quick Links
+              </label>
+              <Textarea id="quickLinks" name="quickLinks" value={brandingData.quickLinks} onChange={handleChange} placeholder="Enter links (one per line)" className="h-32" />
+            </div>
+            <div>
+              <label className="block  text-gray-500 text-sm font-medium mb-2">Social Media Links</label>
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <img src={ICONS.facebook} alt="Facebook" className="h-5 w-5" />
+                  <Input id="socialMedia.facebook" name="socialMedia.facebook" value={brandingData.socialMedia.facebook} onChange={handleChange} placeholder="Facebook URL" />
+                </div>
+                <div className="flex items-center gap-2">
+                  <img src={ICONS.instagram} alt="Instagram" className="h-5 w-5" />
+                  <Input id="socialMedia.instagram" name="socialMedia.instagram" value={brandingData.socialMedia.instagram} onChange={handleChange} placeholder="Instagram URL" />
+                </div>
+                <div className="flex items-center gap-2">
+                  <img src={ICONS.twitter} alt="Twitter" className="h-5 w-5" />
+                  <Input id="socialMedia.twitter" name="socialMedia.twitter" value={brandingData.socialMedia.twitter} onChange={handleChange} placeholder="Twitter URL" />
+                </div>
+              </div>
+            </div>
+            <div>
+              <label htmlFor="legalPages" className="block  text-gray-500 text-sm font-medium mb-2">
+                Legal Pages
+              </label>
+              <Textarea id="legalPages" name="legalPages" value={brandingData.legalPages} onChange={handleChange} placeholder="Enter legal page links (one per line)" className="h-32" />
+            </div>
+          </div>
+        </div>
+
+        {/* Copyright */}
+        <div className="border-t border-gray-700 pt-6">
+          <h3 className="text-xl font-semibold mb-4">Copyright</h3>
+          <div>
+            <label htmlFor="copyright" className="block  text-gray-500 text-sm font-medium mb-2">
+              Copyright Message
+            </label>
+            <Input id="copyright" name="copyright" value={brandingData.copyright} onChange={handleChange} placeholder="© 2025 99wiwi" />
+          </div>
+        </div>
+
+        {/* Widget Blocks */}
+        <div className="border-t border-gray-700 pt-6">
+          <h3 className="text-xl font-semibold mb-4">Widget Blocks</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {brandingData.widgetBlocks.map((block, index) => (
+              <div key={index}>
+                <label htmlFor={`widgetBlocks.${index}`} className="block  text-gray-500 text-sm font-medium mb-2">
+                  Block {index + 1}
+                </label>
+                <Input id={`widgetBlocks.${index}`} name={`widgetBlocks.${index}`} value={block} onChange={handleChange} placeholder={`Enter block ${index + 1} name`} />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Submit Button */}
+        <div className="pt-6">
+          <Button type="submit" disabled={updateBranding.isPending}>
+            {updateBranding.isPending ? "Saving..." : "Save Changes"}
+          </Button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+export default function AdminPage() {
+  const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState("analytics");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  if (!user) return <Redirect to="/auth" />;
+  if (!user.isAdmin) return <Redirect to="/" />;
+
+  const isOwner = user.isOwner;
+
+  const sidebarItems = [
+    { key: "analytics", label: "Analytics", icon: BarChart3 },
+    { key: "users", label: "Users", icon: UserCog },
+    { key: "transactions", label: "Transactions", icon: History },
+    { key: "announcements", label: "Announcements", icon: Megaphone },
+    { key: "support", label: "Support", icon: LifeBuoy },
+    { key: "ban-appeals", label: "Ban Appeals", icon: MessagesSquare },
+    { key: "coins", label: "Coins", icon: CoinsIcon },
+    { key: "bonuses", label: "Bonuses", icon: Gift },
+    { key: "leaderboard", label: "leaderboard", icon: Trophy },
+    { key: "branding", label: "site branding", icon: Settings2 },
+    { key: "gameconfig", label: "Game Config", icon: Settings },
+    { key: "subscriptions", label: "Subscriptions", icon: Crown },
+    { key: "passwords", label: "Passwords", icon: Lock },
+  ];
+
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case "analytics":
+        return <AnalyticsTab />;
+      case "users":
+        return <UsersTab />;
+      case "coins":
+        return <CoinsTab />;
+      case "leaderboard":
+        return <LeaderboardTab />;
+      case "bonuses":
+        return <BonusesTab />;
+      case "announcements":
+        return <AnnouncementsTab />;
+      case "gameconfig":
+        return <GameConfigTab />;
+      case "support":
+        return <SupportTab />;
+      case "subscriptions":
+        return <SubscriptionsTab />;
+      case "ban-appeals":
+        return <BanAppealsTab />;
+      case "branding":
+        return <BrandingTab />;
+      case "passwords":
+        return <PasswordsTab />;
+      case "transactions":
+        return (
+          <div className="text-center p-12 text-muted-foreground">
+            <h3 className="text-lg font-medium mb-2">Coming Soon</h3>
+            <p>Transaction management features will be available soon.</p>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="flex flex-col md:flex-row min-h-screen bg-black">
+      {/* Mobile Toggle Button */}
+      <div className="md:hidden p-4 flex items-center justify-between bg-black border-b border-white/10">
+        <button onClick={() => setSidebarOpen(!sidebarOpen)} className="text-white">
+          <Menu className="h-6 w-6" />
+        </button>
+        <img src={logo} alt="Logo" className="h-10" />
+      </div>
+
+      {/* Sidebar */}
+      <aside
+        className={`
+          fixed md:static top-0 left-0 h-screen z-40 bg-black border-r-2 shadow-md p-6 w-64 overflow-y-auto
+          transform transition-transform duration-300 ease-in-out
+          ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} 
+          md:translate-x-0
+        `}>
+        <div>
+          <img src={logo} alt="Logo" className="h-20 w-auto" />
+          <h2 className="text-xl font-bold text-white">Admin Panel</h2>
+          <p className="text-sm text-muted-foreground">Manage system settings</p>
+          {!isOwner && <p className="text-xs text-amber-500 mt-2">Some tabs are only for owners</p>}
+        </div>
+  );
+ }
 
 export default function AdminPage() {
   // const { user } = useAuth();
@@ -3823,33 +3834,19 @@ export default function AdminPage() {
               className={`w-full flex items-center gap-2 px-4 py-2 rounded-md text-left text-sm font-medium 
                 text-gray-400 hover:bg-white/10
                 ${activeTab === key ? "bg-purple-900/20 text-purple-600" : ""}
-              `}
-            >
-              <Icon
-                className={`h-4 w-4 ${
-                  activeTab === key ? "text-purple-600" : "text-gray-400"
-                }`}
-              />
+              `}>
+              <Icon className={`h-4 w-4 ${activeTab === key ? "text-purple-600" : "text-gray-400"}`} />
+
               {label}
             </button>
           ))}
         </nav>
-        <div className="py-4">
-          <Button
-            variant="outline"
-            className="w-full justify-start"
-            onClick={handleLogout}
-          >
-            <LogOut size={18} className="mr-2" />
-            Logout
-          </Button>
-        </div>
+
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 p-6 ml-0 md:ml-15 mt-[72px] md:mt-0 overflow-y-auto h-screen">
-        {renderTabContent()}
-      </main>
+      <main className="flex-1 p-6 ml-0 md:ml-15 mt-[72px] md:mt-0 overflow-y-auto h-screen">{renderTabContent()}</main>
+
     </div>
   );
 }

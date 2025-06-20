@@ -3,32 +3,15 @@ import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { AnnouncementBanner } from "@/components/announcement-banner";
-import {
-  Home,
-  Dices,
-  TrendingUp,
-  Coins,
-  Clock,
-  MessageSquare,
-  Gift,
-  Crown,
-  Settings,
-  LogOut,
-  Menu,
-  X,
-} from "lucide-react";
+
+import { Home, Dices, TrendingUp, Coins, Clock, MessageSquare, Gift, Crown, Settings, LogOut, Menu, X } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/lib/game-utils";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 import logo from "../../logo.png";
@@ -53,12 +36,9 @@ function NavItem({ href, icon, label, onClick }: NavItemProps) {
       href={href}
       className={cn(
         "flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors",
-        isActive
-          ? "bg-primary/10 text-primary"
-          : "text-muted-foreground hover:bg-muted hover:text-foreground"
+        isActive ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted hover:text-foreground"
       )}
-      onClick={onClick}
-    >
+      onClick={onClick}>
       {icon}
       {label}
     </Link>
@@ -117,11 +97,9 @@ export default function MainLayout({ children }: MainLayoutProps) {
                 </Link>
               </div>
               <div className="flex items-center gap-2">
-                {user && (
-                  <div className="text-sm font-medium mr-2">
-                    {formatCurrency(user.balance)}
-                  </div>
-                )}
+
+                {user && <div className="text-sm font-medium mr-2">{formatCurrency(user.balance)}</div>}
+
 
                 <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
                   <SheetTrigger asChild>
@@ -133,11 +111,9 @@ export default function MainLayout({ children }: MainLayoutProps) {
                     <div className="flex flex-col h-full">
                       <div className="flex items-center justify-between py-2">
                         <h2 className="text-lg font-semibold">Menu</h2>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => setSidebarOpen(false)}
-                        >
+
+                        <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(false)}>
+
                           <X size={18} />
                         </Button>
                       </div>
@@ -146,15 +122,11 @@ export default function MainLayout({ children }: MainLayoutProps) {
                         <div className="border rounded-md p-3 mb-4">
                           <div className="flex items-center gap-3">
                             <Avatar>
-                              <AvatarFallback>
-                                {user.username?.charAt(0).toUpperCase()}
-                              </AvatarFallback>
+                              <AvatarFallback>{user.username?.charAt(0).toUpperCase()}</AvatarFallback>
                             </Avatar>
                             <div>
                               <div className="font-medium">{user.username}</div>
-                              <div className="text-sm text-muted-foreground">
-                                Balance: {formatCurrency(user.balance)}
-                              </div>
+                              <div className="text-sm text-muted-foreground">Balance: {formatCurrency(user.balance)}</div>
                             </div>
                           </div>
                         </div>
@@ -163,32 +135,15 @@ export default function MainLayout({ children }: MainLayoutProps) {
                       <nav className="flex-1 overflow-auto py-2">
                         <div className="flex flex-col gap-1">
                           {navigationItems.map((item) => (
-                            <NavItem
-                              key={item.href}
-                              href={item.href}
-                              icon={item.icon}
-                              label={item.label}
-                              onClick={() => setSidebarOpen(false)}
-                            />
+                            <NavItem key={item.href} href={item.href} icon={item.icon} label={item.label} onClick={() => setSidebarOpen(false)} />
                           ))}
 
-                          {isAdmin && (
-                            <NavItem
-                              href="/admin"
-                              icon={<Settings size={18} />}
-                              label="Admin"
-                              onClick={() => setSidebarOpen(false)}
-                            />
-                          )}
+                          {isAdmin && <NavItem href="/admin" icon={<Settings size={18} />} label="Admin" onClick={() => setSidebarOpen(false)} />}
                         </div>
                       </nav>
 
                       <div className="py-4 border-t">
-                        <Button
-                          variant="outline"
-                          className="w-full justify-start"
-                          onClick={handleLogout}
-                        >
+                        <Button variant="outline" className="w-full justify-start" onClick={handleLogout}>
                           <LogOut size={18} className="mr-2" />
                           Logout
                         </Button>
@@ -204,16 +159,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
           <div className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t py-2 px-4">
             <div className="flex justify-around">
               {mobilePrimaryNav.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={cn(
-                    "flex flex-col items-center px-2 py-1 rounded-md",
-                    location === item.href
-                      ? "text-primary"
-                      : "text-muted-foreground"
-                  )}
-                >
+                <Link key={item.href} href={item.href} className={cn("flex flex-col items-center px-2 py-1 rounded-md", location === item.href ? "text-primary" : "text-muted-foreground")}>
                   {item.icon}
                   <span className="text-xs mt-1">{item.label}</span>
                 </Link>
@@ -228,45 +174,27 @@ export default function MainLayout({ children }: MainLayoutProps) {
                 </SheetTrigger>
                 <SheetContent side="bottom" className="h-[50vh]">
                   <div className="grid grid-cols-3 gap-4 pt-4">
-                    <Link
-                      href="/slots"
-                      className="flex flex-col items-center p-3 rounded-md border hover:bg-muted"
-                    >
+                    <Link href="/slots" className="flex flex-col items-center p-3 rounded-md border hover:bg-muted">
                       <Dices size={24} className="mb-2" />
                       <span className="text-sm">Slots</span>
                     </Link>
-                    <Link
-                      href="/dice"
-                      className="flex flex-col items-center p-3 rounded-md border hover:bg-muted"
-                    >
+                    <Link href="/dice" className="flex flex-col items-center p-3 rounded-md border hover:bg-muted">
                       <Dices size={24} className="mb-2" />
                       <span className="text-sm">Dice</span>
                     </Link>
-                    <Link
-                      href="/crash"
-                      className="flex flex-col items-center p-3 rounded-md border hover:bg-muted"
-                    >
+                    <Link href="/crash" className="flex flex-col items-center p-3 rounded-md border hover:bg-muted">
                       <TrendingUp size={24} className="mb-2" />
                       <span className="text-sm">Crash</span>
                     </Link>
-                    <Link
-                      href="/roulette"
-                      className="flex flex-col items-center p-3 rounded-md border hover:bg-muted"
-                    >
+                    <Link href="/roulette" className="flex flex-col items-center p-3 rounded-md border hover:bg-muted">
                       <Dices size={24} className="mb-2" />
                       <span className="text-sm">Roulette</span>
                     </Link>
-                    <Link
-                      href="/blackjack"
-                      className="flex flex-col items-center p-3 rounded-md border hover:bg-muted"
-                    >
+                    <Link href="/blackjack" className="flex flex-col items-center p-3 rounded-md border hover:bg-muted">
                       <Dices size={24} className="mb-2" />
                       <span className="text-sm">Blackjack</span>
                     </Link>
-                    <Link
-                      href="/plinko"
-                      className="flex flex-col items-center p-3 rounded-md border hover:bg-muted"
-                    >
+                    <Link href="/plinko" className="flex flex-col items-center p-3 rounded-md border hover:bg-muted">
                       <Dices size={24} className="mb-2" />
                       <span className="text-sm">Plinko</span>
                     </Link>
@@ -278,9 +206,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                 <DropdownMenuTrigger asChild>
                   <button className="flex flex-col items-center px-2 py-1 rounded-md text-muted-foreground">
                     <Avatar className="h-[18px] w-[18px]">
-                      <AvatarFallback className="text-[10px]">
-                        {user?.username?.charAt(0).toUpperCase()}
-                      </AvatarFallback>
+                      <AvatarFallback className="text-[10px]">{user?.username?.charAt(0).toUpperCase()}</AvatarFallback>
                     </Avatar>
                     <span className="text-xs mt-1">Account</span>
                   </button>
@@ -315,10 +241,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    className="cursor-pointer"
-                    onClick={handleLogout}
-                  >
+                  <DropdownMenuItem className="cursor-pointer" onClick={handleLogout}>
                     <LogOut size={16} className="mr-2" />
                     Logout
                   </DropdownMenuItem>
@@ -344,21 +267,10 @@ export default function MainLayout({ children }: MainLayoutProps) {
             <div className="flex-1 flex flex-col min-h-0 pt-3 px-2">
               <nav className="flex-1 flex flex-col gap-1">
                 {navigationItems.map((item) => (
-                  <NavItem
-                    key={item.href}
-                    href={item.href}
-                    icon={item.icon}
-                    label={item.label}
-                  />
+                  <NavItem key={item.href} href={item.href} icon={item.icon} label={item.label} />
                 ))}
 
-                {isAdmin && (
-                  <NavItem
-                    href="/admin"
-                    icon={<Settings size={18} />}
-                    label="Admin"
-                  />
-                )}
+                {isAdmin && <NavItem href="/admin" icon={<Settings size={18} />} label="Admin" />}
               </nav>
 
               {user && (
@@ -366,32 +278,17 @@ export default function MainLayout({ children }: MainLayoutProps) {
                   <div className="flex items-center justify-between mb-4 px-3">
                     <div className="flex items-center">
                       <Avatar className="h-8 w-8 mr-2">
-                        <AvatarFallback>
-                          {user.username?.charAt(0).toUpperCase()}
-                        </AvatarFallback>
+                        <AvatarFallback>{user.username?.charAt(0).toUpperCase()}</AvatarFallback>
                       </Avatar>
                       <div>
-                        <div className="font-medium text-sm">
-                          {user.username}
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          {user.subscriptionTier
-                            ? `VIP ${user.subscriptionTier}`
-                            : "Free User"}
-                        </div>
+                        <div className="font-medium text-sm">{user.username}</div>
+                        <div className="text-xs text-muted-foreground">{user.subscriptionTier ? `VIP ${user.subscriptionTier}` : "Free User"}</div>
                       </div>
                     </div>
-                    <div className="text-xs font-medium">
-                      Balance : {formatCurrency(user.balance)}
-                    </div>
+                    <div className="text-xs font-medium">{formatCurrency(user.balance)}</div>
                   </div>
 
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full justify-start"
-                    onClick={handleLogout}
-                  >
+                  <Button variant="outline" size="sm" className="w-full justify-start" onClick={handleLogout}>
                     <LogOut size={18} className="mr-2" />
                     Logout
                   </Button>
@@ -404,13 +301,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
           <div className="flex-1 lg:pl-64">
             <header className="sticky top-0 z-40 w-full h-14 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
               <div className="flex h-14 items-center px-4">
-                <div className="ml-auto flex items-center gap-2">
-                  {user && (
-                    <div className="text-sm font-medium">
-                      Balance : {formatCurrency(user.balance)}
-                    </div>
-                  )}
-                </div>
+                <div className="ml-auto flex items-center gap-2">{user && <div className="text-sm font-medium">{formatCurrency(user.balance)}</div>}</div>
               </div>
             </header>
 

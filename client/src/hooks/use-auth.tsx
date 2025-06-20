@@ -1,21 +1,7 @@
 import { createContext, useContext, ReactNode } from "react";
-import {
-  useQuery,
-  useMutation,
-  UseMutationResult,
-} from "@tanstack/react-query";
-import {
-  insertUserSchema,
-  User as SelectUser,
-  InsertUser,
-} from "@shared/schema";
-import {
-  apiRequest,
-  getQueryFn,
-  queryClient,
-  setAuthToken,
-  removeAuthToken,
-} from "../lib/queryClient";
+import { useQuery, useMutation, UseMutationResult } from "@tanstack/react-query";
+import { insertUserSchema, User as SelectUser, InsertUser } from "@shared/schema";
+import { apiRequest, getQueryFn, queryClient, setAuthToken, removeAuthToken } from "../lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 
@@ -67,12 +53,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         description: `Welcome back, ${data.user.username}!`,
       });
 
-      // ✅ Redirect to /admin if isAdmin === true, else /profile
-      if (data.user.isAdmin) {
-        setLocation("/admin");
-      } else {
-        setLocation("/");
-      }
+      setLocation("/profile"); // ✅ Redirect to profile
+
     },
     onError: (error) => {
       toast({
@@ -95,7 +77,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         title: "Registration successful",
         description: `Welcome to 99wiwi Casino, ${data.user.username}!`,
       });
+
       setLocation("/profile");
+
     },
     onError: (error) => {
       toast({
@@ -116,7 +100,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         title: "Logged out",
         description: "You have been successfully logged out",
       });
+
       setLocation("/");
+
     },
     onError: (error) => {
       toast({
@@ -137,8 +123,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         loginMutation,
         logoutMutation,
         registerMutation,
-      }}
-    >
+      }}>
       {children}
     </AuthContext.Provider>
   );
