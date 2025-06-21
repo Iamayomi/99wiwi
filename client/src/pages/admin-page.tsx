@@ -1,15 +1,11 @@
-
 import React, { useState, useEffect, useCallback } from "react";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 // import { debounce } from "lodash";
-
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/use-auth";
 import { Redirect, Link, useLocation } from "wouter";
 import MainLayout from "@/components/layouts/main-layout";
-
 import { Card as UICard, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-
 import { Badge } from "@/components/ui/badge";
 import {
   AlertDialog,
@@ -23,10 +19,8 @@ import {
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -101,9 +95,7 @@ function UsersTab() {
   } = useQuery({
     queryKey: ["/api/admin/users", page],
     queryFn: async () => {
-
       const res = await apiRequest("GET", `/api/admin/users?page=${page}&limit=10`);
-
       return await res.json();
     },
   });
@@ -117,9 +109,7 @@ function UsersTab() {
     queryKey: ["/api/admin/users/search", searchTerm],
     queryFn: async () => {
       if (!searchTerm || searchTerm.length < 2) return { users: [] };
-
       const res = await apiRequest("GET", `/api/admin/users/search?q=${encodeURIComponent(searchTerm)}`);
-
       return await res.json();
     },
     enabled: searchTerm.length >= 2,
@@ -127,10 +117,8 @@ function UsersTab() {
 
   // Update admin status mutation
   const updateAdminStatus = useMutation({
-
     mutationFn: async ({ userId, isAdmin }: { userId: number; isAdmin: boolean }) => {
       const res = await apiRequest("PATCH", `/api/admin/users/${userId}/admin-status`, { isAdmin });
-
       return await res.json();
     },
     onSuccess: () => {
@@ -153,13 +141,11 @@ function UsersTab() {
 
   // Ban/unban user mutation
   const updateBanStatus = useMutation({
-
     mutationFn: async ({ userId, isBanned, banReason }: { userId: number; isBanned: boolean; banReason?: string }) => {
       // For banning, use POST to /api/admin/users/:userId/ban with banReason
       // For unbanning, use POST to /api/admin/users/:userId/unban
       if (isBanned) {
         const res = await apiRequest("POST", `/api/admin/users/${userId}/unban`);
-
         return await res.json();
       } else {
         // When banning, require a reason
@@ -232,14 +218,12 @@ function UsersTab() {
   };
 
   // Users to render (search results or paginated list)
-
   const usersToRender = searchTerm.length >= 2 && searchResults ? searchResults.users : usersData?.users || [];
+
   if (error) {
     return (
       <div className="text-center p-8">
-        <p className="text-red-500">
-          Error loading users: {(error as Error).message}
-        </p>
+        <p className="text-red-500">Error loading users: {(error as Error).message}</p>
         <Button onClick={() => refetch()} className="mt-4">
           <RefreshCw className="mr-2 h-4 w-4" />
           Retry
@@ -254,11 +238,7 @@ function UsersTab() {
         <form onSubmit={handleSearch} className="flex gap-2">
           <Input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="Search users by username..." className="flex-1" />
           <Button type="submit" disabled={isSearching || searchTerm.length < 2}>
-            {isSearching ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Search className="h-4 w-4" />
-            )}
+            {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
           </Button>
         </form>
       </div>
@@ -300,10 +280,7 @@ function UsersTab() {
                       {user.isBanned ? (
                         <Badge variant="destructive">Banned</Badge>
                       ) : (
-                        <Badge
-                          variant="outline"
-                          className="bg-green-50 text-green-600 border-green-200"
-                        >
+                        <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200">
                           Active
                         </Badge>
                       )}
@@ -387,10 +364,7 @@ function UsersTab() {
                     {selectedUser.isBanned ? (
                       <Badge variant="destructive">Banned</Badge>
                     ) : (
-                      <Badge
-                        variant="outline"
-                        className="bg-green-50 text-green-600 border-green-200"
-                      >
+                      <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200">
                         Active
                       </Badge>
                     )}
@@ -398,17 +372,12 @@ function UsersTab() {
                 </div>
                 <div>
                   <Label>Last Login</Label>
-
                   <div>{selectedUser.lastLogin ? new Date(selectedUser.lastLogin).toLocaleString() : "Never"}</div>
-
                 </div>
               </div>
 
               <div className="flex justify-end gap-2 pt-4">
-                <Button
-                  variant="outline"
-                  onClick={() => setIsUserDialogOpen(false)}
-                >
+                <Button variant="outline" onClick={() => setIsUserDialogOpen(false)}>
                   Close
                 </Button>
               </div>
@@ -421,9 +390,7 @@ function UsersTab() {
       <Dialog open={isBanDialogOpen} onOpenChange={setIsBanDialogOpen}>
         <DialogContent>
           <DialogHeader>
-
             <DialogTitle>{selectedUser?.isBanned ? "Unban User" : "Ban User"}</DialogTitle>
-
             <DialogDescription>
               {selectedUser?.isBanned
                 ? "Are you sure you want to unban this user? They will regain access to the platform."
@@ -468,10 +435,8 @@ function UsersTab() {
                       banReason: banReason,
                     })
                   }
-
                   disabled={updateBanStatus.isPending || (!selectedUser.isBanned && banReason.trim().length < 3)}>
                   {updateBanStatus.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-
                   {selectedUser.isBanned ? "Unban User" : "Ban User"}
                 </Button>
               </div>
@@ -484,11 +449,9 @@ function UsersTab() {
       <Dialog open={isAdminDialogOpen} onOpenChange={setIsAdminDialogOpen}>
         <DialogContent>
           <DialogHeader>
-
             <DialogTitle>{selectedUser?.isAdmin ? "Remove Admin" : "Make Admin"}</DialogTitle>
             <DialogDescription>
               {selectedUser?.isAdmin ? "Are you sure you want to remove admin privileges from this user?" : "Are you sure you want to grant admin privileges to this user?"}
-
             </DialogDescription>
           </DialogHeader>
 
@@ -500,9 +463,7 @@ function UsersTab() {
               </div>
 
               <div className="flex justify-end gap-2 pt-4">
-
                 <Button variant="outline" onClick={() => setIsAdminDialogOpen(false)} disabled={updateAdminStatus.isPending}>
-
                   Cancel
                 </Button>
                 <Button
@@ -515,7 +476,6 @@ function UsersTab() {
                   }
                   disabled={updateAdminStatus.isPending}>
                   {updateAdminStatus.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-
                   {selectedUser.isAdmin ? "Remove Admin" : "Make Admin"}
                 </Button>
               </div>
@@ -545,9 +505,7 @@ function CoinsTab() {
     queryKey: ["/api/admin/users/search", username],
     queryFn: async () => {
       if (!username || username.length < 2) return { users: [] };
-
       const res = await apiRequest("GET", `/api/admin/users/search?q=${encodeURIComponent(username)}`);
-
       return await res.json();
     },
     enabled: username.length >= 2,
@@ -562,32 +520,26 @@ function CoinsTab() {
   } = useQuery({
     queryKey: ["/api/admin/coin-transactions"],
     queryFn: async () => {
-
       const res = await apiRequest("GET", `/api/admin/coin-transactions?limit=20`);
-
       return await res.json();
     },
   });
 
   // Adjust user balance mutation
   const adjustBalance = useMutation({
-
     mutationFn: async ({ userId, amount, reason }: { userId: number; amount: number; reason: string }) => {
       const res = await apiRequest("POST", `/api/admin/users/${userId}/adjust-balance`, {
         amount,
         reason,
       });
-
       return await res.json();
     },
     onSuccess: () => {
       toast({
         title: "Success",
         description: "User balance adjusted successfully",
-
       });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/coin-transactions"] });
-
       setIsAdjustDialogOpen(false);
       setCoinAmount("100");
       setReason("");
@@ -670,9 +622,7 @@ function CoinsTab() {
   if (error) {
     return (
       <div className="text-center p-8">
-        <p className="text-red-500">
-          Error loading transactions: {(error as Error).message}
-        </p>
+        <p className="text-red-500">Error loading transactions: {(error as Error).message}</p>
         <Button onClick={() => refetch()} className="mt-4">
           <RefreshCw className="mr-2 h-4 w-4" />
           Retry
@@ -694,7 +644,6 @@ function CoinsTab() {
               <div>
                 <Label htmlFor="username">Username</Label>
                 <form onSubmit={handleSearch} className="flex gap-2 mt-1">
-
                   <Input id="username" type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Search by username..." className="flex-1" />
                   <Button type="submit" disabled={isSearching || username.length < 2}>
                     {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
@@ -723,17 +672,13 @@ function CoinsTab() {
                   <div className="mt-2 text-sm text-muted-foreground">No users found with that username</div>
                 )}
 
-
                 {selectedUser && (
                   <div className="mt-4 p-3 border rounded-md bg-muted/50">
                     <div className="flex justify-between items-center">
                       <div>
-                        <span className="font-medium">Selected User:</span>{" "}
-                        {selectedUser.username}
+                        <span className="font-medium">Selected User:</span> {selectedUser.username}
                       </div>
-                      <span className="text-green-600 font-semibold">
-                        {formatCurrency(selectedUser.balance)}
-                      </span>
+                      <span className="text-green-600 font-semibold">{formatCurrency(selectedUser.balance)}</span>
                     </div>
                   </div>
                 )}
@@ -770,9 +715,7 @@ function CoinsTab() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {!transactionsData ||
-              !transactionsData.transactions ||
-              transactionsData.transactions.length === 0 ? (
+              {!transactionsData || !transactionsData.transactions || transactionsData.transactions.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} className="text-center py-8">
                     No transactions found
@@ -784,15 +727,12 @@ function CoinsTab() {
                     <TableCell>{transaction.id}</TableCell>
                     <TableCell>{transaction.userId}</TableCell>
                     <TableCell className={transaction.amount > 0 ? "text-green-600 font-medium" : "text-red-600 font-medium"}>
-
                       {transaction.amount > 0 ? "+" : ""}
                       {formatCurrency(transaction.amount)}
                     </TableCell>
                     <TableCell>{transaction.adminId}</TableCell>
                     <TableCell>{transaction.reason}</TableCell>
-                    <TableCell>
-                      {new Date(transaction.timestamp).toLocaleString()}
-                    </TableCell>
+                    <TableCell>{new Date(transaction.timestamp).toLocaleString()}</TableCell>
                   </TableRow>
                 ))
               )}
@@ -807,7 +747,6 @@ function CoinsTab() {
           <DialogHeader>
             <DialogTitle>Adjust User Balance</DialogTitle>
             <DialogDescription>Add or remove coins from {selectedUser?.username}'s account. Use positive numbers to add coins and negative numbers to remove coins.</DialogDescription>
-
           </DialogHeader>
 
           <form onSubmit={handleSubmitAdjustment} className="space-y-4">
@@ -828,13 +767,11 @@ function CoinsTab() {
             </div>
 
             <DialogFooter>
-
               <Button type="button" variant="outline" onClick={() => setIsAdjustDialogOpen(false)} disabled={adjustBalance.isPending}>
                 Cancel
               </Button>
               <Button type="submit" disabled={adjustBalance.isPending}>
                 {adjustBalance.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-
                 Confirm Adjustment
               </Button>
             </DialogFooter>
@@ -921,15 +858,9 @@ function BonusesTab() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Users</SelectItem>
-                    <SelectItem value="new">
-                      New Users (less than 10 games)
-                    </SelectItem>
-                    <SelectItem value="active">
-                      Active Users (10-100 games)
-                    </SelectItem>
-                    <SelectItem value="veteran">
-                      Veteran Users (over 100 games)
-                    </SelectItem>
+                    <SelectItem value="new">New Users (less than 10 games)</SelectItem>
+                    <SelectItem value="active">Active Users (10-100 games)</SelectItem>
+                    <SelectItem value="veteran">Veteran Users (over 100 games)</SelectItem>
                     <SelectItem value="custom">Custom Filter</SelectItem>
                   </SelectContent>
                 </Select>
@@ -949,9 +880,7 @@ function BonusesTab() {
               )}
             </div>
 
-
             <Button type="submit" className="w-full" disabled={sendBonus.isPending}>
-
               {sendBonus.isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -990,9 +919,7 @@ function AnnouncementsTab() {
   } = useQuery({
     queryKey: ["/api/admin/announcements"],
     queryFn: async () => {
-
       const res = await apiRequest("GET", "/api/admin/announcements?includeExpired=true");
-
       return await res.json();
     },
   });
@@ -1067,9 +994,7 @@ function AnnouncementsTab() {
   if (error) {
     return (
       <div className="text-center p-8">
-        <p className="text-red-500">
-          Error loading announcements: {(error as Error).message}
-        </p>
+        <p className="text-red-500">Error loading announcements: {(error as Error).message}</p>
         <Button onClick={() => refetch()} className="mt-4">
           <RefreshCw className="mr-2 h-4 w-4" />
           Retry
@@ -1094,8 +1019,7 @@ function AnnouncementsTab() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {announcements?.announcements &&
-          announcements.announcements.length === 0 ? (
+          {announcements?.announcements && announcements.announcements.length === 0 ? (
             <div className="col-span-2 text-center p-12 border rounded-lg">
               <p className="text-muted-foreground">No announcements yet</p>
             </div>
@@ -1116,11 +1040,9 @@ function AnnouncementsTab() {
                   <p className="whitespace-pre-line">{announcement.message}</p>
                 </CardContent>
                 <CardFooter className="flex justify-between">
-
                   <div className="text-sm text-muted-foreground">{announcement.expiresAt ? <>Expires: {new Date(announcement.expiresAt).toLocaleString()}</> : <>Never expires</>}</div>
                   <Button variant="destructive" size="sm" onClick={() => deleteAnnouncement.mutate(announcement.id)} disabled={deleteAnnouncement.isPending}>
                     {deleteAnnouncement.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Delete"}
-
                   </Button>
                 </CardFooter>
               </UICard>
@@ -1134,9 +1056,7 @@ function AnnouncementsTab() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Create Announcement</DialogTitle>
-
             <DialogDescription>Create a new announcement for all users. Announcements appear on the site banner.</DialogDescription>
-
           </DialogHeader>
 
           <form onSubmit={handleSubmit}>
@@ -1184,7 +1104,6 @@ function AnnouncementsTab() {
                     <SelectItem value="120">2 minutes</SelectItem>
                   </SelectContent>
                 </Select>
-
                 <p className="text-sm text-muted-foreground mt-1">{isPinned ? "Pinned announcements don't expire" : "How long this announcement will be visible (5-300 seconds)"}</p>
               </div>
             </div>
@@ -1194,9 +1113,7 @@ function AnnouncementsTab() {
                 Cancel
               </Button>
               <Button type="submit" disabled={createAnnouncement.isPending}>
-
                 {createAnnouncement.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Create"}
-
               </Button>
             </DialogFooter>
           </form>
@@ -1222,9 +1139,7 @@ function GameConfigTab() {
   } = useQuery({
     queryKey: ["/api/admin/game-config", selectedGame],
     queryFn: async () => {
-
       const res = await apiRequest("GET", `/api/admin/game-config/${selectedGame}`);
-
       return await res.json();
     },
   });
@@ -1277,9 +1192,7 @@ function GameConfigTab() {
   if (error) {
     return (
       <div className="text-center p-8">
-        <p className="text-red-500">
-          Error loading game configuration: {(error as Error).message}
-        </p>
+        <p className="text-red-500">Error loading game configuration: {(error as Error).message}</p>
         <Button onClick={() => refetch()} className="mt-4">
           <RefreshCw className="mr-2 h-4 w-4" />
           Retry
@@ -1313,16 +1226,13 @@ function GameConfigTab() {
       ) : (
         <UICard>
           <CardHeader>
-
             <CardTitle>{selectedGame.charAt(0).toUpperCase() + selectedGame.slice(1)} Settings</CardTitle>
             <CardDescription>Configure game parameters and odds</CardDescription>
-
           </CardHeader>
           <CardContent>
             {!isEditing ? (
               <div className="space-y-4">
                 {gameConfig &&
-
                   Object.entries(gameConfig).map(([key, value]: [string, any]) => (
                     <div key={key} className="grid grid-cols-2">
                       <div className="font-medium">{key}</div>
@@ -1331,7 +1241,6 @@ function GameConfigTab() {
                   ))}
 
                 <Button onClick={() => setIsEditing(true)} className="w-full mt-4">
-
                   <Settings className="mr-2 h-4 w-4" />
                   Edit Configuration
                 </Button>
@@ -1352,7 +1261,6 @@ function GameConfigTab() {
                     </div>
                   ))}
 
-
                 <div className="flex justify-end gap-2 pt-4">
                   <Button
                     type="button"
@@ -1364,7 +1272,6 @@ function GameConfigTab() {
                     Cancel
                   </Button>
                   <Button type="submit" disabled={updateConfig.isPending}>
-
                     {updateConfig.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Save Changes"}
                   </Button>
                 </div>
@@ -1399,7 +1306,6 @@ function SupportTab() {
       try {
         const status = statusFilter === "all" ? "" : statusFilter;
         const res = await apiRequest("GET", `/api/admin/support/tickets?status=${status}&page=${page}`);
-
         return await res.json();
       } catch (error) {
         console.error("Error fetching tickets:", error);
@@ -1426,7 +1332,6 @@ function SupportTab() {
     queryFn: async () => {
       if (!selectedTicket) return null;
       try {
-
         const res = await apiRequest("GET", `/api/admin/support/tickets/${selectedTicket.id}`);
         return await res.json();
       } catch (error) {
@@ -1443,7 +1348,6 @@ function SupportTab() {
 
   // Add reply mutation
   const addReply = useMutation({
-
     mutationFn: async ({ ticketId, message }: { ticketId: number; message: string }) => {
       const res = await apiRequest("POST", `/api/admin/support/tickets/${ticketId}/reply`, { message, isAdmin: true });
       return await res.json();
@@ -1470,7 +1374,6 @@ function SupportTab() {
   const updateStatus = useMutation({
     mutationFn: async ({ ticketId, status }: { ticketId: number; status: string }) => {
       const res = await apiRequest("PATCH", `/api/admin/support/tickets/${ticketId}/status`, { status });
-
       return await res.json();
     },
     onSuccess: (data) => {
@@ -1526,33 +1429,25 @@ function SupportTab() {
     switch (status) {
       case "open":
         return (
-
           <Badge variant="outline" className="bg-blue-50 text-blue-600 border-blue-200">
-
             Open
           </Badge>
         );
       case "in-progress":
         return (
-
           <Badge variant="outline" className="bg-yellow-50 text-yellow-600 border-yellow-200">
-
             In Progress
           </Badge>
         );
       case "resolved":
         return (
-
           <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200">
-
             Resolved
           </Badge>
         );
       case "closed":
         return (
-
           <Badge variant="outline" className="bg-gray-50 text-gray-600 border-gray-200">
-
             Closed
           </Badge>
         );
@@ -1564,9 +1459,7 @@ function SupportTab() {
   if (error) {
     return (
       <div className="text-center p-8">
-        <p className="text-red-500">
-          Error loading support tickets: {(error as Error).message}
-        </p>
+        <p className="text-red-500">Error loading support tickets: {(error as Error).message}</p>
         <Button onClick={() => refetch()} className="mt-4">
           <RefreshCw className="mr-2 h-4 w-4" />
           Retry
@@ -1621,9 +1514,7 @@ function SupportTab() {
                 ticketsData.tickets.map((ticket: any) => (
                   <TableRow key={ticket.id}>
                     <TableCell>{ticket.id}</TableCell>
-                    <TableCell className="font-medium">
-                      {ticket.subject}
-                    </TableCell>
+                    <TableCell className="font-medium">{ticket.subject}</TableCell>
                     <TableCell>{ticket.username}</TableCell>
                     <TableCell>
                       <StatusBadge status={ticket.status} />
@@ -1646,12 +1537,10 @@ function SupportTab() {
                 Showing page {page} of {ticketsData.pagination.totalPages}
               </div>
               <div className="flex gap-2">
-
                 <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(p - 1, 1))} disabled={page === 1}>
                   Previous
                 </Button>
                 <Button variant="outline" size="sm" onClick={() => setPage((p) => p + 1)} disabled={page >= ticketsData.pagination.totalPages}>
-
                   Next
                 </Button>
               </div>
@@ -1700,13 +1589,10 @@ function SupportTab() {
                             <div className="font-medium">
                               {message.username}
                               {message.isAdmin && <Badge className="ml-2 bg-blue-600">Admin</Badge>}
-
                             </div>
                             <div className="text-sm text-muted-foreground">{new Date(message.timestamp).toLocaleString()}</div>
                           </div>
-                          <p className="whitespace-pre-line">
-                            {message.message}
-                          </p>
+                          <p className="whitespace-pre-line">{message.message}</p>
                         </div>
                       ))}
                     </div>
@@ -1717,35 +1603,28 @@ function SupportTab() {
                         <Label className="mb-2 block">Update Status</Label>
                         <div className="flex flex-wrap gap-2">
                           {selectedTicket.status !== "in-progress" && (
-
                             <Button variant="outline" size="sm" onClick={() => handleStatusChange("in-progress")} disabled={updateStatus.isPending}>
-
                               Mark as In Progress
                             </Button>
                           )}
 
                           {selectedTicket.status !== "resolved" && (
-
                             <Button variant="outline" size="sm" onClick={() => handleStatusChange("resolved")} disabled={updateStatus.isPending}>
-
                               Mark as Resolved
                             </Button>
                           )}
-
 
                           <Button variant="outline" size="sm" onClick={() => handleStatusChange("closed")} disabled={updateStatus.isPending}>
                             Close Ticket
                           </Button>
 
                           {updateStatus.isPending && <Loader2 className="h-4 w-4 animate-spin ml-2" />}
-
                         </div>
                       </div>
                     )}
 
                     {/* Reply form */}
                     {selectedTicket.status !== "closed" && (
-
                       <form onSubmit={handleSendReply} className="border-t pt-4">
                         <Label htmlFor="reply" className="mb-2 block">
                           Reply
@@ -1755,7 +1634,6 @@ function SupportTab() {
                         <div className="flex justify-end">
                           <Button type="submit" disabled={addReply.isPending || replyMessage.trim() === ""}>
                             {addReply.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Send Reply"}
-
                           </Button>
                         </div>
                       </form>
@@ -1792,9 +1670,7 @@ function SubscriptionsTab() {
     if (username.length >= 2) {
       setIsSearching(true);
       try {
-
         const res = await apiRequest("GET", `/api/admin/users/search?q=${encodeURIComponent(username)}`);
-
         const data = await res.json();
         setSearchResults(data);
       } catch (error) {
@@ -1817,9 +1693,7 @@ function SubscriptionsTab() {
 
     // Fetch user's subscription status
     try {
-
       const res = await apiRequest("GET", `/api/admin/users/${user.id}/subscription`);
-
       const data = await res.json();
       setUserSubscription(data.subscription);
     } catch (error) {
@@ -1840,9 +1714,7 @@ function SubscriptionsTab() {
         reason,
       };
 
-
       const res = await apiRequest("POST", "/api/admin/subscriptions/assign", payload);
-
       return await res.json();
     },
     onSuccess: () => {
@@ -1876,9 +1748,7 @@ function SubscriptionsTab() {
     mutationFn: async () => {
       if (!selectedUser) throw new Error("No user selected");
 
-
       const res = await apiRequest("DELETE", `/api/admin/users/${selectedUser.id}/subscription`, { reason: removeReason });
-
       return await res.json();
     },
     onSuccess: () => {
@@ -1956,15 +1826,12 @@ function SubscriptionsTab() {
                   placeholder="Search by username"
                   className="flex-1"
                   onKeyDown={(e) => {
-
                     if (e.key === "Enter" && username.length >= 2 && !isSearching) {
-
                       e.preventDefault();
                       searchUsers();
                     }
                   }}
                 />
-
                 <Button type="button" variant="outline" onClick={searchUsers} disabled={isSearching || username.length < 2}>
                   {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
                 </Button>
@@ -1979,38 +1846,25 @@ function SubscriptionsTab() {
                           <div>
                             <div className="font-medium">{user.username}</div>
                             <div className="text-xs text-muted-foreground">ID: {user.id}</div>
-
                           </div>
-                          {user.subscriptionTier && (
-                            <Badge className="ml-2 capitalize">
-                              {user.subscriptionTier}
-                            </Badge>
-                          )}
                         </div>
-
                         {user.subscriptionTier && <Badge className="ml-2 capitalize">{user.subscriptionTier}</Badge>}
                       </div>
                     ))}
-
                   </div>
-                )}
+                </div>
+              )}
             </div>
 
             {selectedUser && (
               <div className="border rounded-md p-4 bg-muted/30 mt-4">
                 <div className="flex justify-between items-center mb-4">
                   <div>
-                    <h3 className="text-lg font-medium">
-                      {selectedUser.username}
-                    </h3>
-                    <p className="text-sm text-muted-foreground">
-                      User ID: {selectedUser.id}
-                    </p>
+                    <h3 className="text-lg font-medium">{selectedUser.username}</h3>
+                    <p className="text-sm text-muted-foreground">User ID: {selectedUser.id}</p>
                   </div>
                   {selectedUser.subscriptionTier ? (
-                    <Badge className="capitalize text-sm">
-                      {selectedUser.subscriptionTier}
-                    </Badge>
+                    <Badge className="capitalize text-sm">{selectedUser.subscriptionTier}</Badge>
                   ) : (
                     <Badge variant="outline" className="text-sm">
                       No subscription
@@ -2022,7 +1876,6 @@ function SubscriptionsTab() {
                   <div className="space-y-4">
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
-
                         <span className="text-muted-foreground">Status:</span> <Badge variant={userSubscription.status === "active" ? "default" : "outline"}>{userSubscription.status}</Badge>
                       </div>
                       <div>
@@ -2031,14 +1884,11 @@ function SubscriptionsTab() {
                       {userSubscription.endDate && (
                         <div>
                           <span className="text-muted-foreground">End date:</span> {new Date(userSubscription.endDate).toLocaleDateString()}
-
                         </div>
                       )}
                     </div>
 
-
                     <AlertDialog open={showRemoveDialog} onOpenChange={setShowRemoveDialog}>
-
                       <AlertDialogTrigger asChild>
                         <Button variant="destructive" className="w-full">
                           Remove Subscription
@@ -2046,20 +1896,14 @@ function SubscriptionsTab() {
                       </AlertDialogTrigger>
                       <AlertDialogContent>
                         <AlertDialogHeader>
-                          <AlertDialogTitle>
-                            Remove Subscription
-                          </AlertDialogTitle>
+                          <AlertDialogTitle>Remove Subscription</AlertDialogTitle>
                           <AlertDialogDescription>
-
                             Are you sure you want to remove the {userSubscription.tier} subscription from {selectedUser.username}? This action cannot be undone.
-
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <div className="space-y-4 py-4">
                           <div className="space-y-2">
-
                             <Label htmlFor="removeReason">Reason (optional)</Label>
-
                             <Textarea
                               id="removeReason"
                               value={removeReason}
@@ -2071,9 +1915,7 @@ function SubscriptionsTab() {
                         </div>
                         <AlertDialogFooter>
                           <AlertDialogCancel>Cancel</AlertDialogCancel>
-
                           <AlertDialogAction onClick={handleRemoveSubscription} disabled={removeSubscription.isPending}>
-
                             {removeSubscription.isPending ? (
                               <>
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -2089,9 +1931,7 @@ function SubscriptionsTab() {
                   </div>
                 ) : (
                   <div className="text-center py-6">
-                    <p className="text-muted-foreground mb-4">
-                      This user doesn't have an active subscription
-                    </p>
+                    <p className="text-muted-foreground mb-4">This user doesn't have an active subscription</p>
                   </div>
                 )}
               </div>
@@ -2107,16 +1947,13 @@ function SubscriptionsTab() {
               <Crown className="h-5 w-5 mr-2 text-primary" />
               Assign Subscription
             </CardTitle>
-
             <CardDescription>Grant a subscription tier to {selectedUser.username} for a specified duration</CardDescription>
-
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="subscriptionTier">Subscription Tier</Label>
-
                   <Select defaultValue={subscriptionTier} onValueChange={setSubscriptionTier} disabled={assignSubscription.isPending}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select subscription tier" />
@@ -2131,9 +1968,7 @@ function SubscriptionsTab() {
 
                 <div className="space-y-2">
                   <Label htmlFor="durationMonths">Duration (months)</Label>
-
                   <Select defaultValue={durationMonths} onValueChange={setDurationMonths} disabled={assignSubscription.isPending}>
-
                     <SelectTrigger>
                       <SelectValue placeholder="Select duration" />
                     </SelectTrigger>
@@ -2159,9 +1994,7 @@ function SubscriptionsTab() {
                 />
               </div>
 
-
               <Button type="submit" className="w-full" disabled={!selectedUser || assignSubscription.isPending}>
-
                 {assignSubscription.isPending ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -2187,9 +2020,7 @@ function AnalyticsTab() {
   const { toast } = useToast();
   const [timeframe, setTimeframe] = useState("today");
 
-
   const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8", "#82CA9D", "#FF6B6B", "#747474"];
-
 
   const {
     data: analyticsData,
@@ -2199,9 +2030,7 @@ function AnalyticsTab() {
   } = useQuery({
     queryKey: ["/api/admin/analytics", timeframe],
     queryFn: async () => {
-
       const res = await apiRequest("GET", `/api/admin/analytics?timeframe=${timeframe}`);
-
       return await res.json();
     },
   });
@@ -2209,9 +2038,7 @@ function AnalyticsTab() {
   if (error) {
     return (
       <div className="text-center p-8">
-        <p className="text-red-500">
-          Error loading analytics: {(error as Error).message}
-        </p>
+        <p className="text-red-500">Error loading analytics: {(error as Error).message}</p>
         <Button onClick={() => refetch()} className="mt-4">
           <RefreshCw className="mr-2 h-4 w-4" />
           Retry
@@ -2249,16 +2076,12 @@ function AnalyticsTab() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <UICard>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-muted-foreground">
-                  Active Users
-                </CardTitle>
+                <CardTitle className="text-sm text-muted-foreground">Active Users</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex items-center">
                   <Users className="h-5 w-5 text-blue-500 mr-2" />
-                  <div className="text-2xl font-bold">
-                    {analyticsData?.activeUsers || 0}
-                  </div>
+                  <div className="text-2xl font-bold">{analyticsData?.activeUsers || 0}</div>
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">Out of {analyticsData?.totalUsers || 0} total users</p>
               </CardContent>
@@ -2266,56 +2089,40 @@ function AnalyticsTab() {
 
             <UICard>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-muted-foreground">
-                  Coins Spent
-                </CardTitle>
+                <CardTitle className="text-sm text-muted-foreground">Coins Spent</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex items-center">
                   <CoinsIcon className="h-5 w-5 text-amber-500 mr-2" />
-                  <div className="text-2xl font-bold">
-                    {formatCurrency(analyticsData?.coinsSpent || 0)}
-                  </div>
+                  <div className="text-2xl font-bold">{formatCurrency(analyticsData?.coinsSpent || 0)}</div>
                 </div>
-
                 <p className="text-xs text-muted-foreground mt-1">In {timeframe === "today" ? "the last 24 hours" : timeframe}</p>
-
               </CardContent>
             </UICard>
 
             <UICard>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-muted-foreground">
-                  Coins Earned by Users
-                </CardTitle>
+                <CardTitle className="text-sm text-muted-foreground">Coins Earned by Users</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex items-center">
                   <Coins className="h-5 w-5 text-green-500 mr-2" />
-                  <div className="text-2xl font-bold">
-                    {formatCurrency(analyticsData?.coinsEarned || 0)}
-                  </div>
+                  <div className="text-2xl font-bold">{formatCurrency(analyticsData?.coinsEarned || 0)}</div>
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
-
                   Payout ratio: {analyticsData?.coinsSpent && analyticsData?.coinsEarned ? `${((analyticsData.coinsEarned / analyticsData.coinsSpent) * 100).toFixed(1)}%` : "N/A"}
-
                 </p>
               </CardContent>
             </UICard>
 
             <UICard>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-muted-foreground">
-                  Most Popular Game
-                </CardTitle>
+                <CardTitle className="text-sm text-muted-foreground">Most Popular Game</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex items-center">
                   <Activity className="h-5 w-5 text-purple-500 mr-2" />
-
                   <div className="text-2xl font-bold capitalize">{analyticsData?.mostPlayedGame?.gameType || "N/A"}</div>
-
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">{analyticsData?.mostPlayedGame?.count || 0} plays</p>
               </CardContent>
@@ -2331,8 +2138,7 @@ function AnalyticsTab() {
                 <CardDescription>Popularity of different games</CardDescription>
               </CardHeader>
               <CardContent className="h-[300px]">
-                {analyticsData?.gameDistribution &&
-                analyticsData.gameDistribution.length > 0 ? (
+                {analyticsData?.gameDistribution && analyticsData.gameDistribution.length > 0 ? (
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
@@ -2343,12 +2149,10 @@ function AnalyticsTab() {
                         cy="50%"
                         outerRadius={80}
                         fill="#8884d8"
-
                         label={({ gameType, percent }) => `${gameType}: ${(percent * 100).toFixed(0)}%`}>
                         {analyticsData.gameDistribution.map((entry: { gameType: string; count: number }, index: number) => (
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
-
                       </Pie>
                       <Tooltip formatter={(value, name) => [value, name]} />
                       <Legend />
@@ -2356,9 +2160,7 @@ function AnalyticsTab() {
                   </ResponsiveContainer>
                 ) : (
                   <div className="flex items-center justify-center h-full">
-                    <p className="text-muted-foreground">
-                      No game data available
-                    </p>
+                    <p className="text-muted-foreground">No game data available</p>
                   </div>
                 )}
               </CardContent>
@@ -2368,13 +2170,10 @@ function AnalyticsTab() {
             <UICard className="col-span-1">
               <CardHeader>
                 <CardTitle>Subscription Tiers</CardTitle>
-                <CardDescription>
-                  Distribution of subscription tiers
-                </CardDescription>
+                <CardDescription>Distribution of subscription tiers</CardDescription>
               </CardHeader>
               <CardContent className="h-[300px]">
-                {analyticsData?.subscriptionStats &&
-                analyticsData.subscriptionStats.length > 0 ? (
+                {analyticsData?.subscriptionStats && analyticsData.subscriptionStats.length > 0 ? (
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={analyticsData.subscriptionStats} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                       <CartesianGrid strokeDasharray="3 3" />
@@ -2383,14 +2182,15 @@ function AnalyticsTab() {
                       <Tooltip />
                       <Legend />
                       <Bar dataKey="count" name="Users" fill="#8884d8">
+                        {analyticsData.subscriptionStats.map((entry: { tier: string; count: number }, index: number) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
                       </Bar>
                     </BarChart>
                   </ResponsiveContainer>
                 ) : (
                   <div className="flex items-center justify-center h-full">
-                    <p className="text-muted-foreground">
-                      No subscription data available
-                    </p>
+                    <p className="text-muted-foreground">No subscription data available</p>
                   </div>
                 )}
               </CardContent>
@@ -2400,29 +2200,22 @@ function AnalyticsTab() {
             <UICard className="col-span-1 lg:col-span-2">
               <CardHeader>
                 <CardTitle>New User Registrations</CardTitle>
-                <CardDescription>
-                  Daily new user counts for the past 30 days
-                </CardDescription>
+                <CardDescription>Daily new user counts for the past 30 days</CardDescription>
               </CardHeader>
               <CardContent className="h-[300px]">
-                {analyticsData?.dailyNewUsers &&
-                analyticsData.dailyNewUsers.length > 0 ? (
+                {analyticsData?.dailyNewUsers && analyticsData.dailyNewUsers.length > 0 ? (
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={analyticsData.dailyNewUsers} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" />
-
                       <XAxis dataKey="date" tickFormatter={(date) => new Date(date).toLocaleDateString(undefined, { month: "short", day: "numeric" })} />
                       <YAxis />
                       <Tooltip labelFormatter={(date) => new Date(date).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" })} />
                       <Area type="monotone" dataKey="count" name="New Users" stroke="#8884d8" fill="#8884d8" />
-
                     </AreaChart>
                   </ResponsiveContainer>
                 ) : (
                   <div className="flex items-center justify-center h-full">
-                    <p className="text-muted-foreground">
-                      No user registration data available
-                    </p>
+                    <p className="text-muted-foreground">No user registration data available</p>
                   </div>
                 )}
               </CardContent>
@@ -2432,21 +2225,16 @@ function AnalyticsTab() {
             <UICard className="col-span-1 lg:col-span-2">
               <CardHeader>
                 <CardTitle>Daily Betting Activity</CardTitle>
-                <CardDescription>
-                  Bets and wins for the past 30 days
-                </CardDescription>
+                <CardDescription>Bets and wins for the past 30 days</CardDescription>
               </CardHeader>
               <CardContent className="h-[300px]">
-                {analyticsData?.dailyTransactions &&
-                analyticsData.dailyTransactions.length > 0 ? (
+                {analyticsData?.dailyTransactions && analyticsData.dailyTransactions.length > 0 ? (
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={analyticsData.dailyTransactions} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                       <CartesianGrid strokeDasharray="3 3" />
-
                       <XAxis dataKey="date" tickFormatter={(date) => new Date(date).toLocaleDateString(undefined, { month: "short", day: "numeric" })} />
                       <YAxis />
                       <Tooltip labelFormatter={(date) => new Date(date).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" })} />
-
                       <Legend />
                       <Bar dataKey="bets" name="Total Bets" fill="#0088FE" />
                       <Bar dataKey="wins" name="Wins" fill="#00C49F" />
@@ -2454,9 +2242,7 @@ function AnalyticsTab() {
                   </ResponsiveContainer>
                 ) : (
                   <div className="flex items-center justify-center h-full">
-                    <p className="text-muted-foreground">
-                      No transaction data available
-                    </p>
+                    <p className="text-muted-foreground">No transaction data available</p>
                   </div>
                 )}
               </CardContent>
@@ -2491,22 +2277,18 @@ function BanAppealsTab() {
       }
       queryParams.append("page", page.toString());
 
-
       const res = await apiRequest("GET", `/api/admin/ban-appeals?${queryParams.toString()}`);
-
       return await res.json();
     },
   });
 
   // Respond to appeal mutation
   const respondToAppeal = useMutation({
-
     mutationFn: async ({ appealId, status, response }: { appealId: number; status: string; response: string }) => {
       const res = await apiRequest("POST", `/api/admin/ban-appeals/${appealId}/respond`, {
         status,
         response,
       });
-
       return await res.json();
     },
     onSuccess: () => {
@@ -2555,11 +2337,7 @@ function BanAppealsTab() {
 
   // Pagination controls
   const handleNextPage = () => {
-    if (
-      appealsData &&
-      appealsData.pagination &&
-      page < appealsData.pagination.totalPages
-    ) {
+    if (appealsData && appealsData.pagination && page < appealsData.pagination.totalPages) {
       setPage(page + 1);
     }
   };
@@ -2580,9 +2358,7 @@ function BanAppealsTab() {
       case "pending":
       default:
         return (
-
           <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
-
             Pending
           </Badge>
         );
@@ -2592,9 +2368,7 @@ function BanAppealsTab() {
   if (error) {
     return (
       <div className="text-center p-8">
-        <p className="text-red-500">
-          Error loading ban appeals: {(error as Error).message}
-        </p>
+        <p className="text-red-500">Error loading ban appeals: {(error as Error).message}</p>
         <Button onClick={() => refetch()} className="mt-4">
           <RefreshCw className="mr-2 h-4 w-4" />
           Retry
@@ -2666,7 +2440,6 @@ function BanAppealsTab() {
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
                         <Button variant="outline" size="sm" onClick={() => handleOpenResponseDialog(appeal)} disabled={appeal.status !== "pending"}>
-
                           <MessagesSquare className="h-4 w-4" />
                         </Button>
                       </div>
@@ -2697,10 +2470,7 @@ function BanAppealsTab() {
       )}
 
       {/* Appeal Response Dialog */}
-      <Dialog
-        open={isResponseDialogOpen}
-        onOpenChange={setIsResponseDialogOpen}
-      >
+      <Dialog open={isResponseDialogOpen} onOpenChange={setIsResponseDialogOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Respond to Ban Appeal</DialogTitle>
@@ -2711,9 +2481,7 @@ function BanAppealsTab() {
             <div className="space-y-4">
               <div>
                 <Label>User</Label>
-
                 <div className="font-semibold">{selectedAppeal.user?.username || `User #${selectedAppeal.userId}`}</div>
-
               </div>
 
               <div>
@@ -2752,7 +2520,6 @@ function BanAppealsTab() {
                 </Button>
                 <Button variant="default" onClick={() => handleSubmitResponse("approved")} disabled={respondToAppeal.isPending || responseText.trim().length < 10}>
                   {respondToAppeal.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-
                   Approve & Unban
                 </Button>
               </div>
@@ -2782,9 +2549,7 @@ function PasswordsTab() {
     queryKey: ["/api/admin/users/search", searchTerm],
     queryFn: async () => {
       if (!searchTerm || searchTerm.length < 2) return { users: [] };
-
       const res = await apiRequest("GET", `/api/admin/users/search?q=${encodeURIComponent(searchTerm)}`);
-
       return await res.json();
     },
     enabled: searchTerm.length >= 2,
@@ -2864,11 +2629,7 @@ function PasswordsTab() {
         <form onSubmit={handleSearch} className="flex gap-2">
           <Input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="Search users by username..." className="flex-1" />
           <Button type="submit" disabled={isSearching || searchTerm.length < 2}>
-            {isSearching ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Search className="h-4 w-4" />
-            )}
+            {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
           </Button>
         </form>
       </div>
@@ -2892,9 +2653,7 @@ function PasswordsTab() {
               {!searchResults?.users || searchResults.users.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={4} className="text-center py-8">
-                    {searchTerm.length >= 2
-                      ? "No users found"
-                      : "Search for a user to reset their password"}
+                    {searchTerm.length >= 2 ? "No users found" : "Search for a user to reset their password"}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -2910,10 +2669,7 @@ function PasswordsTab() {
                       {user.isBanned ? (
                         <Badge variant="destructive">Banned</Badge>
                       ) : (
-                        <Badge
-                          variant="outline"
-                          className="bg-green-50 text-green-600 border-green-200"
-                        >
+                        <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200">
                           Active
                         </Badge>
                       )}
@@ -2956,10 +2712,7 @@ function PasswordsTab() {
               </div>
 
               <div>
-                <Label
-                  htmlFor="confirmPassword"
-                  className="text-sm font-medium"
-                >
+                <Label htmlFor="confirmPassword" className="text-sm font-medium">
                   Confirm Password <span className="text-red-500">*</span>
                 </Label>
                 <Input id="confirmPassword" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="mt-1" placeholder="Confirm new password" />
@@ -2977,9 +2730,7 @@ function PasswordsTab() {
                   disabled={resetPassword.isPending}>
                   Cancel
                 </Button>
-
                 <Button variant="default" onClick={handleSubmitPasswordReset} disabled={resetPassword.isPending || !newPassword || newPassword.length < 6 || newPassword !== confirmPassword}>
-
                   {resetPassword.isPending ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -3000,7 +2751,6 @@ function PasswordsTab() {
     </div>
   );
 }
-
 
 // Define interfaces for type safety
 interface LeaderboardEntry {
@@ -3721,107 +3471,6 @@ export default function AdminPage() {
           <p className="text-sm text-muted-foreground">Manage system settings</p>
           {!isOwner && <p className="text-xs text-amber-500 mt-2">Some tabs are only for owners</p>}
         </div>
-  );
- }
-
-export default function AdminPage() {
-  // const { user } = useAuth();
-  const { user, logoutMutation } = useAuth();
-
-  const [activeTab, setActiveTab] = useState("analytics");
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  if (!user) return <Redirect to="/auth" />;
-  if (!user.isAdmin) return <Redirect to="/" />;
-
-  const isOwner = user.isOwner;
-
-  const sidebarItems = [
-    { key: "analytics", label: "Analytics", icon: BarChart3 },
-    { key: "users", label: "Users", icon: UserCog },
-    { key: "transactions", label: "Transactions", icon: History },
-    { key: "announcements", label: "Announcements", icon: Megaphone },
-    { key: "support", label: "Support", icon: LifeBuoy },
-    { key: "ban-appeals", label: "Ban Appeals", icon: MessagesSquare },
-    { key: "coins", label: "Coins", icon: CoinsIcon },
-    { key: "bonuses", label: "Bonuses", icon: Gift },
-    { key: "gameconfig", label: "Game Config", icon: Settings },
-    { key: "subscriptions", label: "Subscriptions", icon: Crown },
-    { key: "passwords", label: "Passwords", icon: Lock },
-  ];
-
-  const renderTabContent = () => {
-    switch (activeTab) {
-      case "analytics":
-        return <AnalyticsTab />;
-      case "users":
-        return <UsersTab />;
-      case "coins":
-        return <CoinsTab />;
-      case "bonuses":
-        return <BonusesTab />;
-      case "announcements":
-        return <AnnouncementsTab />;
-      case "gameconfig":
-        return <GameConfigTab />;
-      case "support":
-        return <SupportTab />;
-      case "subscriptions":
-        return <SubscriptionsTab />;
-      case "ban-appeals":
-        return <BanAppealsTab />;
-      case "passwords":
-        return <PasswordsTab />;
-      case "transactions":
-        return (
-          <div className="text-center p-12 text-muted-foreground">
-            <h3 className="text-lg font-medium mb-2">Coming Soon</h3>
-            <p>Transaction management features will be available soon.</p>
-          </div>
-        );
-      default:
-        return null;
-    }
-  };
-
-  const handleLogout = () => {
-    logoutMutation.mutate();
-  };
-
-  return (
-    <div className="flex flex-col md:flex-row min-h-screen bg-black">
-      {/* Mobile Toggle Button */}
-      <div className="md:hidden p-4 flex items-center justify-between bg-black border-b border-white/10">
-        <button
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="text-white"
-        >
-          <Menu className="h-6 w-6" />
-        </button>
-        <img src={logo} alt="Logo" className="h-10" />
-      </div>
-
-      {/* Sidebar */}
-      <aside
-        className={`
-          fixed md:static top-0 left-0 h-screen z-40 bg-black border-r-2 shadow-md p-6 w-64 overflow-y-auto
-          transform transition-transform duration-300 ease-in-out
-          ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} 
-          md:translate-x-0
-        `}
-      >
-        <div>
-          <img src={logo} alt="Logo" className="h-20 w-auto" />
-          <h2 className="text-xl font-bold text-white">Admin Panel</h2>
-          <p className="text-sm text-muted-foreground">
-            Manage system settings
-          </p>
-          {!isOwner && (
-            <p className="text-xs text-amber-500 mt-2">
-              Some tabs are only for owners
-            </p>
-          )}
-        </div>
 
         <nav className="mt-6 space-y-2">
           {sidebarItems.map(({ key, label, icon: Icon }) => (
@@ -3836,17 +3485,14 @@ export default function AdminPage() {
                 ${activeTab === key ? "bg-purple-900/20 text-purple-600" : ""}
               `}>
               <Icon className={`h-4 w-4 ${activeTab === key ? "text-purple-600" : "text-gray-400"}`} />
-
               {label}
             </button>
           ))}
         </nav>
-
       </aside>
 
       {/* Main Content */}
       <main className="flex-1 p-6 ml-0 md:ml-15 mt-[72px] md:mt-0 overflow-y-auto h-screen">{renderTabContent()}</main>
-
     </div>
   );
 }
