@@ -55,17 +55,17 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
   const navigationItems = [
     { href: "/", icon: <Home size={18} />, label: "Home" },
-    { href: "/slots", icon: <Dices size={18} />, label: "Slots" },
-    { href: "/dice", icon: <Dices size={18} />, label: "Dice" },
-    { href: "/crash", icon: <TrendingUp size={18} />, label: "Crash" },
-    { href: "/roulette", icon: <Dices size={18} />, label: "Roulette" },
-    { href: "/blackjack", icon: <Dices size={18} />, label: "Blackjack" },
-    { href: "/plinko", icon: <Dices size={18} />, label: "Plinko" },
+    // { href: "/slots", icon: <Dices size={18} />, label: "Slots" },
+    // { href: "/dice", icon: <Dices size={18} />, label: "Dice" },
+    // { href: "/crash", icon: <TrendingUp size={18} />, label: "Crash" },
+    // { href: "/roulette", icon: <Dices size={18} />, label: "Roulette" },
+    // { href: "/blackjack", icon: <Dices size={18} />, label: "Blackjack" },
+    // { href: "/plinko", icon: <Dices size={18} />, label: "Plinko" },
     { href: "/purchase", icon: <Coins size={18} />, label: "Buy Coins" },
     { href: "/history", icon: <Clock size={18} />, label: "History" },
     // { href: "/rewards", icon: <Gift size={18} />, label: "Rewards" },
     { href: "/profile", icon: <Gift size={18} />, label: "Profile" },
-    { href: "/subscriptions", icon: <Crown size={18} />, label: "VIP" },
+    // { href: "/subscriptions", icon: <Crown size={18} />, label: "VIP" },
     { href: "/support", icon: <MessageSquare size={18} />, label: "Support" },
   ];
 
@@ -97,9 +97,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                 </Link>
               </div>
               <div className="flex items-center gap-2">
-
                 {user && <div className="text-sm font-medium mr-2">{formatCurrency(user.balance)}</div>}
-
 
                 <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
                   <SheetTrigger asChild>
@@ -113,7 +111,6 @@ export default function MainLayout({ children }: MainLayoutProps) {
                         <h2 className="text-lg font-semibold">Menu</h2>
 
                         <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(false)}>
-
                           <X size={18} />
                         </Button>
                       </div>

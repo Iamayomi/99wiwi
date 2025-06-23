@@ -18,40 +18,14 @@ export default function ProfilePage() {
           <div className="absolute bottom-0 left-0 w-32 h-32 bg-[#00E701] opacity-10 rounded-full -ml-10 -mb-10"></div>
 
           <div className="relative">
-            <h2 className="text-2xl md:text-3xl font-heading font-bold mb-2">
-              Hello, {user?.username || "Player"} 👋
-            </h2>
-            <p className="text-gray-400 max-w-xl mb-4">
-              Manage your profile, view your subscription status, and update
-              account preferences.
-            </p>
-
-            {user?.subscriptionTier ? (
-              <div
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full 
-              bg-gradient-to-r from-amber-900/60 to-yellow-800/60 border border-amber-700/60 text-amber-300 text-sm font-medium"
-              >
-                <Crown className="h-4 w-4 text-yellow-500" />
-                {user.subscriptionTier.charAt(0).toUpperCase() +
-                  user.subscriptionTier.slice(1)}{" "}
-                VIP
-              </div>
-            ) : (
-              <Link href="/subscriptions">
-                <Button className="bg-yellow-600 hover:bg-yellow-500 text-white mt-2">
-                  <Crown className="h-4 w-4 mr-2" />
-                  Upgrade to VIP
-                </Button>
-              </Link>
-            )}
+            <h2 className="text-2xl md:text-3xl font-heading font-bold mb-2">Hello, {user?.username || "Player"} 👋</h2>
+            <p className="text-gray-400 max-w-xl mb-4">Manage your profile, and update account preferences.</p>
           </div>
         </div>
 
         {/* Profile Details */}
         <div className="bg-[#1E1E1E] border border-[#333333] p-6 rounded-xl">
-          <h3 className="text-lg font-heading font-bold mb-4">
-            Account Information
-          </h3>
+          <h3 className="text-lg font-heading font-bold mb-4">Account Information</h3>
           <div className="space-y-2 text-sm text-gray-300">
             <p>
               <strong>Username:</strong> {user?.username}
@@ -59,12 +33,11 @@ export default function ProfilePage() {
             <p>
               <strong>Email:</strong> {user?.email}
             </p>
-            <p>
+            {/* <p>
               <strong>Subscription:</strong> {user?.subscriptionTier || "Free"}
-            </p>
+            </p> */}
             <p>
-              <strong>Joined:</strong>{" "}
-              {new Date(user?.createdAt).toLocaleDateString()}
+              <strong>Joined:</strong> {new Date(user?.createdAt).toLocaleDateString()}
             </p>
           </div>
 
@@ -80,10 +53,9 @@ export default function ProfilePage() {
           </div> */}
         </div>
 
-        <RewardsPage/>
+        {/* <RewardsPage /> */}
       </div>
       {/* <Footer /> */}
-
     </ButtomBar>
   );
 }
