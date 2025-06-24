@@ -220,8 +220,8 @@ export default function MainLayout({ children }: MainLayoutProps) {
     { href: "/purchase", icon: <Coins size={18} />, label: "Buy Coins" },
     { href: "/history", icon: <Clock size={18} />, label: "History" },
     // { href: "/subscriptions", icon: <Crown size={18} />, label: "VIP" },
-    { href: "/support", icon: <MessageSquare size={18} />, label: "Support" },
     { href: "/profile", icon: <User2 size={18} />, label: "Profile" },
+    { href: "/support", icon: <MessageSquare size={18} />, label: "Support" },
   ];
 
   const mobilePrimaryNav = [

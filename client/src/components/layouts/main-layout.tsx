@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { AnnouncementBanner } from "@/components/announcement-banner";
 
-import { Home, Dices, TrendingUp, Coins, Clock, MessageSquare, Gift, Crown, Settings, LogOut, Menu, X } from "lucide-react";
+import { Home, Dices, TrendingUp, Coins, Clock, MessageSquare, Gift, User2, Crown, Settings, LogOut, Menu, X } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/lib/game-utils";
@@ -64,9 +64,9 @@ export default function MainLayout({ children }: MainLayoutProps) {
     { href: "/purchase", icon: <Coins size={18} />, label: "Buy Coins" },
     { href: "/history", icon: <Clock size={18} />, label: "History" },
     // { href: "/rewards", icon: <Gift size={18} />, label: "Rewards" },
-    { href: "/profile", icon: <Gift size={18} />, label: "Profile" },
+    { href: "/profile", icon: <User2 size={18} />, label: "Profile" },
     // { href: "/subscriptions", icon: <Crown size={18} />, label: "VIP" },
-    // { href: "/support", icon: <MessageSquare size={18} />, label: "Support" },
+    { href: "/support", icon: <MessageSquare size={18} />, label: "Support" },
   ];
 
   const handleLogout = () => {
