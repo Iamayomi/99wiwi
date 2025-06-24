@@ -5,7 +5,7 @@ import { eq } from 'drizzle-orm';
 /**
  * Script to add email addresses to existing accounts
  */
-async function addEmailsToAccounts() {
+export async function addEmailsToAccounts() {
   try {
     console.log('Adding email addresses to specific accounts...');
 

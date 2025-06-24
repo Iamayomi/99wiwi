@@ -12,7 +12,7 @@ import { setupPasswordResetRoutes } from "./reset-password";
 
 import { playSlots, playDice, startCrash, crashCashout, getTransactions, playRoulette, startBlackjack, blackjackAction, playPlinko, getBettingOverview } from "./games";
 import Stripe from "stripe";
-import { createPaymentIntentSchema, CoinPackage, subscriptionPlanSchema, manageSubscriptionSchema, SubscriptionPlan, banAppealSchema, LeaderBoard } from "@shared/schema";
+import { createPaymentIntentSchema, CoinPackage, subscriptionPlanSchema, manageSubscriptionSchema, SubscriptionPlan, banAppealSchema, LeaderBoard, updateUserSchema } from "@shared/schema";
 
 import { z } from "zod";
 
@@ -239,7 +239,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-
   // Ban appeal endpoints
   app.get("/api/user/ban-status", banStatusMiddleware, async (req: Request, res: Response) => {
     try {
@@ -307,8 +306,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update user's profile
+  app.patch("/api/user/profile", authMiddleware, async (req: Request, res: Response) => {
+    try {
+      const userId = req.user!.id;
+
+      const updateData = updateUserSchema.parse(req.body);
+
+      const updateProfile = await storage.updateUser(userId, updateData);
+
+      res.json({
+        updateProfile,
+      });
+    } catch (error: any) {
+      console.log(error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   // Get user's current subscription
   app.get("/api/subscriptions/current", authMiddleware, async (req: Request, res: Response) => {
+    try {
+      const userId = req.user!.id;
+      const subscription = await storage.getUserSubscription(userId);
+
+      if (!subscription) {
+        return res.json({ active: false });
+      }
+
+      res.json({
+        ...subscription,
+        active: subscription.status === "active",
+      });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Get user's current subscription
+  app.get("/api/profile", authMiddleware, async (req: Request, res: Response) => {
     try {
       const userId = req.user!.id;
       const subscription = await storage.getUserSubscription(userId);

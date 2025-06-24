@@ -1,16 +1,18 @@
 import { useAuth } from "@/hooks/use-auth";
-import ButtomBar from "@/components/layouts/bottom-bar";
+import BottomBar from "@/components/layouts/bottom-bar";
 import { Button } from "@/components/ui/button";
-import { Crown } from "lucide-react";
+import { Crown, CreditCard } from "lucide-react"; // Added CreditCard icon
 import { Link } from "wouter";
 import RewardsPage from "./rewards-page";
 import Footer from "@/components/HeroPage/Footer";
+import { useState } from "react"; // Added for handling modal or form state
+import { toast } from "@/hooks/use-toast"; // Assuming a toast notification component
 
 export default function ProfilePage() {
   const { user } = useAuth();
 
   return (
-    <ButtomBar>
+    <BottomBar>
       <div className="w-full max-w-[1400px] px-4 md:px-6 py-4 mx-auto overflow-hidden">
         {/* Profile Header */}
         <div className="bg-gradient-to-r from-[#2A2A2A] to-[#1E1E1E] border border-[#333333] p-6 rounded-xl mb-8 relative overflow-hidden">
@@ -24,7 +26,7 @@ export default function ProfilePage() {
         </div>
 
         {/* Profile Details */}
-        <div className="bg-[#1E1E1E] border border-[#333333] p-6 rounded-xl">
+        <div className="bg-[#1E1E1E] border border-[#333333] p-6 rounded-xl mb-8">
           <h3 className="text-lg font-heading font-bold mb-4">Account Information</h3>
           <div className="space-y-2 text-sm text-gray-300">
             <p>
@@ -33,29 +35,29 @@ export default function ProfilePage() {
             <p>
               <strong>Email:</strong> {user?.email}
             </p>
-            {/* <p>
-              <strong>Subscription:</strong> {user?.subscriptionTier || "Free"}
-            </p> */}
+            <p>
+              <strong>Balance:</strong> ${user?.balance || "0.00"} {/* Display user balance */}
+            </p>
             <p>
               <strong>Joined:</strong> {new Date(user?.createdAt).toLocaleDateString()}
             </p>
           </div>
 
-          {/* <div className="mt-6">
+          <div className="mt-6 flex space-x-4">
             <Link href="/settings">
-              <Button
-                variant="outline"
-                className="text-gray-300 border-gray-500 hover:bg-gray-800"
-              >
+              <Button variant="outline" className="text-gray-300 border-gray-500 hover:bg-gray-800">
                 Edit Profile
               </Button>
             </Link>
-          </div> */}
+            <Link href="/purchase">
+              <Button className="bg-[#5465FF] text-white hover:bg-[#4555CC] flex items-center">
+                <CreditCard className="w-4 h-4 mr-2" />
+                Add Funds
+              </Button>
+            </Link>
+          </div>
         </div>
-
-        {/* <RewardsPage /> */}
       </div>
-      {/* <Footer /> */}
-    </ButtomBar>
+    </BottomBar>
   );
 }

@@ -2165,6 +2165,372 @@ function BanAppealsTab() {
   );
 }
 
+// Component for the subscriptions tab
+function SubscriptionsTab() {
+  const { toast } = useToast();
+  const { user: currentUser } = useAuth();
+  const [username, setUsername] = useState<string>("");
+  const [searchResults, setSearchResults] = useState<any>(null);
+  const [isSearching, setIsSearching] = useState<boolean>(false);
+  const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [userSubscription, setUserSubscription] = useState<any>(null);
+  const [subscriptionTier, setSubscriptionTier] = useState<string>("bronze");
+  const [durationMonths, setDurationMonths] = useState<string>("1");
+  const [reason, setReason] = useState<string>("");
+  const [removeReason, setRemoveReason] = useState<string>("");
+  const [showRemoveDialog, setShowRemoveDialog] = useState<boolean>(false);
+
+  // Search users
+  const searchUsers = async (e?: React.MouseEvent) => {
+    if (e) e.preventDefault();
+    if (username.length >= 2) {
+      setIsSearching(true);
+      try {
+        const res = await apiRequest("GET", `/api/admin/users/search?q=${encodeURIComponent(username)}`);
+        const data = await res.json();
+        setSearchResults(data);
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: `Failed to search users: ${(error as Error).message}`,
+          variant: "destructive",
+        });
+      } finally {
+        setIsSearching(false);
+      }
+    }
+  };
+
+  // Select user from search results
+  const handleSelectUser = async (user: any) => {
+    setSelectedUser(user);
+    setUsername(user.username);
+    setSearchResults(null);
+
+    // Fetch user's subscription status
+    try {
+      const res = await apiRequest("GET", `/api/admin/users/${user.id}/subscription`);
+      const data = await res.json();
+      setUserSubscription(data.subscription);
+    } catch (error) {
+      console.error("Failed to fetch subscription:", error);
+      setUserSubscription(null);
+    }
+  };
+
+  // Subscribe mutation
+  const assignSubscription = useMutation({
+    mutationFn: async () => {
+      if (!selectedUser) throw new Error("No user selected");
+
+      const payload = {
+        userId: selectedUser.id,
+        tier: subscriptionTier,
+        durationMonths: parseInt(durationMonths),
+        reason,
+      };
+
+      const res = await apiRequest("POST", "/api/admin/subscriptions/assign", payload);
+      return await res.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: `Subscription assigned to ${selectedUser?.username} successfully`,
+      });
+
+      // Reset form
+      setSelectedUser(null);
+      setUsername("");
+      setSubscriptionTier("bronze");
+      setDurationMonths("1");
+      setReason("");
+      setUserSubscription(null);
+
+      // Refresh data
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: `Failed to assign subscription: ${error.message}`,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Remove subscription mutation
+  const removeSubscription = useMutation({
+    mutationFn: async () => {
+      if (!selectedUser) throw new Error("No user selected");
+
+      const res = await apiRequest("DELETE", `/api/admin/users/${selectedUser.id}/subscription`, { reason: removeReason });
+      return await res.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: `Subscription removed from ${selectedUser?.username} successfully`,
+      });
+
+      // Reset form and dialog
+      setShowRemoveDialog(false);
+      setRemoveReason("");
+      setUserSubscription(null);
+
+      // Update user's subscription status
+      if (selectedUser) {
+        setSelectedUser({
+          ...selectedUser,
+          subscriptionTier: null,
+        });
+      }
+
+      // Refresh data
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: `Failed to remove subscription: ${error.message}`,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Handle form submission
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    assignSubscription.mutate();
+  };
+
+  // Handle remove subscription
+  const handleRemoveSubscription = () => {
+    removeSubscription.mutate();
+  };
+
+  // Only owner can assign subscriptions
+  if (!currentUser?.isOwner) {
+    return (
+      <div className="text-center p-12 text-muted-foreground">
+        <Crown className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+        <h3 className="text-lg font-medium mb-2">Owner-Only Feature</h3>
+        <p>Only the site owner can assign subscriptions to users.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid gap-8">
+      <UICard>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <Crown className="h-5 w-5 mr-2 text-primary" />
+            Manage User Subscriptions
+          </CardTitle>
+          <CardDescription>Search for a user to manage their subscription</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="searchUsername">Username</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="searchUsername"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="Search by username"
+                  className="flex-1"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && username.length >= 2 && !isSearching) {
+                      e.preventDefault();
+                      searchUsers();
+                    }
+                  }}
+                />
+                <Button type="button" variant="outline" onClick={searchUsers} disabled={isSearching || username.length < 2}>
+                  {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+                </Button>
+              </div>
+
+              {username.length >= 2 && searchResults && searchResults.users && searchResults.users.length > 0 && (
+                <div className="mt-2 border rounded-md max-h-40 overflow-y-auto">
+                  <div className="p-1">
+                    {searchResults.users.map((user: any) => (
+                      <div key={user.id} className="p-2 hover:bg-accent rounded-sm cursor-pointer flex items-center justify-between" onClick={() => handleSelectUser(user)}>
+                        <div className="flex items-center">
+                          <div>
+                            <div className="font-medium">{user.username}</div>
+                            <div className="text-xs text-muted-foreground">ID: {user.id}</div>
+                          </div>
+                        </div>
+                        {user.subscriptionTier && <Badge className="ml-2 capitalize">{user.subscriptionTier}</Badge>}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {selectedUser && (
+              <div className="border rounded-md p-4 bg-muted/30 mt-4">
+                <div className="flex justify-between items-center mb-4">
+                  <div>
+                    <h3 className="text-lg font-medium">{selectedUser.username}</h3>
+                    <p className="text-sm text-muted-foreground">User ID: {selectedUser.id}</p>
+                  </div>
+                  {selectedUser.subscriptionTier ? (
+                    <Badge className="capitalize text-sm">{selectedUser.subscriptionTier}</Badge>
+                  ) : (
+                    <Badge variant="outline" className="text-sm">
+                      No subscription
+                    </Badge>
+                  )}
+                </div>
+
+                {userSubscription ? (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <span className="text-muted-foreground">Status:</span> <Badge variant={userSubscription.status === "active" ? "default" : "outline"}>{userSubscription.status}</Badge>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Start date:</span> {new Date(userSubscription.startDate).toLocaleDateString()}
+                      </div>
+                      {userSubscription.endDate && (
+                        <div>
+                          <span className="text-muted-foreground">End date:</span> {new Date(userSubscription.endDate).toLocaleDateString()}
+                        </div>
+                      )}
+                    </div>
+
+                    <AlertDialog open={showRemoveDialog} onOpenChange={setShowRemoveDialog}>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="destructive" className="w-full">
+                          Remove Subscription
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Remove Subscription</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to remove the {userSubscription.tier} subscription from {selectedUser.username}? This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <div className="space-y-4 py-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="removeReason">Reason (optional)</Label>
+                            <Textarea
+                              id="removeReason"
+                              value={removeReason}
+                              onChange={(e) => setRemoveReason(e.target.value)}
+                              placeholder="Enter reason for subscription removal"
+                              className="resize-none"
+                            />
+                          </div>
+                        </div>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={handleRemoveSubscription} disabled={removeSubscription.isPending}>
+                            {removeSubscription.isPending ? (
+                              <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Removing...
+                              </>
+                            ) : (
+                              "Remove Subscription"
+                            )}
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                ) : (
+                  <div className="text-center py-6">
+                    <p className="text-muted-foreground mb-4">This user doesn't have an active subscription</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </UICard>
+
+      {selectedUser && (
+        <UICard>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Crown className="h-5 w-5 mr-2 text-primary" />
+              Assign Subscription
+            </CardTitle>
+            <CardDescription>Grant a subscription tier to {selectedUser.username} for a specified duration</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="subscriptionTier">Subscription Tier</Label>
+                  <Select defaultValue={subscriptionTier} onValueChange={setSubscriptionTier} disabled={assignSubscription.isPending}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select subscription tier" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="bronze">Bronze</SelectItem>
+                      <SelectItem value="silver">Silver</SelectItem>
+                      <SelectItem value="gold">Gold</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="durationMonths">Duration (months)</Label>
+                  <Select defaultValue={durationMonths} onValueChange={setDurationMonths} disabled={assignSubscription.isPending}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select duration" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1">1 month</SelectItem>
+                      <SelectItem value="3">3 months</SelectItem>
+                      <SelectItem value="6">6 months</SelectItem>
+                      <SelectItem value="12">12 months</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="reason">Reason (optional)</Label>
+                <Textarea
+                  id="reason"
+                  value={reason}
+                  onChange={(e) => setReason(e.target.value)}
+                  placeholder="Enter reason for subscription assignment"
+                  className="resize-none"
+                  disabled={assignSubscription.isPending}
+                />
+              </div>
+
+              <Button type="submit" className="w-full" disabled={!selectedUser || assignSubscription.isPending}>
+                {assignSubscription.isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Assigning Subscription...
+                  </>
+                ) : (
+                  <>
+                    <Crown className="mr-2 h-4 w-4" />
+                    Assign Subscription
+                  </>
+                )}
+              </Button>
+            </form>
+          </CardContent>
+        </UICard>
+      )}
+    </div>
+  );
+}
+
 // Component for the passwords tab
 function PasswordsTab() {
   const { toast } = useToast();
@@ -2501,7 +2867,7 @@ function LeaderboardTab() {
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {statsData.map((item: OverviewStat, index: number) => (
-              <div key={index} className="bg-light_blue p-4 rounded-md border border-gray-600">
+              <div key={index} className="bg-light_blue p-4 rounded-md border border-gray-900">
                 <div className="font-jua text-gray-500">{item.name}</div>
                 <div className="text-2xl font-bold">{item.value}</div>
               </div>
@@ -3039,7 +3405,7 @@ export default function AdminPage() {
     { key: "leaderboard", label: "leaderboard", icon: Trophy },
     { key: "branding", label: "site branding", icon: Settings2 },
     { key: "gameconfig", label: "Game Config", icon: Settings },
-    // { key: "subscriptions", label: "Subscriptions", icon: Crown },
+    { key: "subscriptions", label: "Subscriptions", icon: Crown },
     { key: "passwords", label: "Passwords", icon: Lock },
   ];
 
@@ -3061,8 +3427,8 @@ export default function AdminPage() {
         return <GameConfigTab />;
       case "support":
         return <SupportTab />;
-      // case "subscriptions":
-      //   return <SubscriptionsTab />;
+      case "subscriptions":
+        return <SubscriptionsTab />;
       case "ban-appeals":
         return <BanAppealsTab />;
       case "branding":

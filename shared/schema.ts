@@ -203,6 +203,11 @@ export const adminBanAppealResponseSchema = z.object({
   response: z.string().min(3).max(500),
 });
 
+export const updateUserSchema = z.object({
+  email: z.string().optional(),
+  username: z.string().optional(),
+});
+
 export const adminCoinAdjustmentSchema = z.object({
   username: z.string(),
   amount: z.number(), // Can be negative for removing coins

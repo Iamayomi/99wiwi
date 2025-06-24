@@ -163,12 +163,12 @@ function BottomNavigation({
                 History
               </Link>
             </DropdownMenuItem>
-            <DropdownMenuItem asChild>
+            {/* <DropdownMenuItem asChild>
               <Link href="/subscriptions" className="flex items-center w-full">
                 <Crown size={16} className="mr-2" />
                 VIP
               </Link>
-            </DropdownMenuItem>
+            </DropdownMenuItem> */}
             <DropdownMenuItem asChild>
               <Link href="/support" className="flex items-center w-full">
                 <MessageSquare size={16} className="mr-2" />
@@ -210,7 +210,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
   const isAdmin = user?.isAdmin || user?.isOwner;
 
   const navigationItems = [
-    { href: "/", icon: <Home size={18} />, label: "Home" },
+    { href: "/home", icon: <Home size={18} />, label: "Home" },
     // { href: "/slots", icon: <Dices size={18} />, label: "Slots" },
     // { href: "/dice", icon: <Dices size={18} />, label: "Dice" },
     // { href: "/crash", icon: <TrendingUp size={18} />, label: "Crash" },
@@ -225,7 +225,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
   ];
 
   const mobilePrimaryNav = [
-    { href: "/", icon: <Home size={18} />, label: "Home" },
+    { href: "/home", icon: <Home size={18} />, label: "Home" },
     { href: "/purchase", icon: <Coins size={18} />, label: "Buy" },
     // { href: "/rewards", icon: <Gift size={18} />, label: "Rewards" },
   ];

@@ -50,9 +50,7 @@ const TopBarMenu: React.FC = () => {
 
           {/* Button */}
           <Link to="/auth" className="start">
-            <div className="px-4 py-2 text-[15px] text-white bg-[#CF2728] hover:bg-[#4d4c4c] rounded-sm cursor-pointer transition-all">
-              Get started
-            </div>
+            <div className="px-4 py-2 text-[15px] text-white bg-[#CF2728] hover:bg-[#4d4c4c] rounded-sm cursor-pointer transition-all">Get started</div>
           </Link>
         </div>
       </div>

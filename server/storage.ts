@@ -39,11 +39,9 @@ import {
   SubscriptionPlan,
   PasswordResetToken,
   InsertPasswordResetToken,
-
   LeaderBoard,
   Branding,
   branding,
-
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, asc, sql, like, and, or, isNull } from "drizzle-orm";
@@ -64,6 +62,7 @@ export interface IStorage {
   updateLoginStreak(userId: number, streak: number): Promise<User>;
   checkDailyRewardStatus(userId: number): Promise<boolean>;
   updateUserPassword(userId: number, newPassword: string): Promise<User>;
+  updateUser(userId: number, updates: { email?: string; username?: string }): Promise<User>;
 
   // Analytics operations
   getActiveUsersCount(startDate: Date, endDate: Date): Promise<number>;
@@ -232,6 +231,46 @@ export class DatabaseStorage implements IStorage {
     }
 
     console.log(`Successfully updated balance for user ${updatedUser.username} (ID: ${userId}) from ${user.balance} to ${updatedUser.balance}`);
+    return updatedUser;
+  }
+
+  async updateUser(userId: number, updates: { email?: string; username?: string }): Promise<User> {
+    console.log(`Updating user details for user ID ${userId}`);
+
+    // First verify the user exists
+    const user = await this.getUser(userId);
+    if (!user) {
+      console.error(`Error updating user: User ID ${userId} not found`);
+      throw new Error(`User ID ${userId} not found`);
+    }
+
+    console.log(`Current details for user ${user.username} (ID: ${userId}): email=${user.email}`);
+
+    // Validate updates
+    if (updates.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(updates.email)) {
+      console.error(`Error updating user: Invalid email format for ID ${userId}`);
+      throw new Error("Invalid email format");
+    }
+
+    // Prepare update object
+    const updateData: Partial<User> = {};
+    if (updates.email) updateData.email = updates.email;
+    if (updates.username) updateData.username = updates.username;
+
+    if (Object.keys(updateData).length === 0) {
+      console.error(`Error updating user: No valid updates provided for ID ${userId}`);
+      throw new Error("No valid updates provided");
+    }
+
+    // Update with SQL query explicitly filtering on the user ID
+    const [updatedUser] = await db.update(users).set(updateData).where(eq(users.id, userId)).returning();
+
+    if (!updatedUser) {
+      console.error(`Error updating user: No user returned after update for ID ${userId}`);
+      throw new Error(`Failed to update user ID ${userId}`);
+    }
+
+    console.log(`Successfully updated user ${updatedUser.username} (ID: ${userId})`);
     return updatedUser;
   }
 
@@ -748,7 +787,6 @@ export class DatabaseStorage implements IStorage {
     }));
   }
 
-
   /**
    * Get all transactions from the database
    * @returns Promise<{ transactions: Transaction[]; count: number }> - Array of all transaction records and total count
@@ -894,7 +932,6 @@ export class DatabaseStorage implements IStorage {
 
     return updatedBranding;
   }
-
 
   async getSubscriptionStats(): Promise<{ tier: string; count: number }[]> {
     const result = await db

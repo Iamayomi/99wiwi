@@ -16,7 +16,7 @@ const BottomNav = () => {
   }, []);
 
   const navItems = [
-    { id: "home", label: "Home", icon: <FaHome />, href: "/" },
+    { id: "home", label: "Home", icon: <FaHome />, href: "/home" },
     {
       id: "casino",
       label: "Live Casino",
@@ -45,12 +45,7 @@ const BottomNav = () => {
         if (item.hidden) return null;
 
         return (
-          <a
-            href={item.href}
-            key={item.id}
-            className="flex flex-col items-center px-2 py-1 transition-all text-gray-500 hover:text-yellow-400"
-            onClick={() => setActiveTab(item.id)}
-          >
+          <a href={item.href} key={item.id} className="flex flex-col items-center px-2 py-1 transition-all text-gray-500 hover:text-yellow-400" onClick={() => setActiveTab(item.id)}>
             <div className="text-[16px]">{item.icon}</div>
             <span className="text-[12px] mt-1">{item.label}</span>
           </a>

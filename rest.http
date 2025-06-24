@@ -1,15 +1,20 @@
-#### SEND REQUEST TO GETS A PROFILE
-GET http://localhost:5000/api/v1/users/profile
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im5vdEBnbWFpbC5jb20iLCJ1c2VySWQiOjEsImlhdCI6MTczNTM4NzQ4MSwiZXhwIjoxNzM1NDczODgxfQ.6SlVtKAGykfS-zTqfYsOh2MdoV5wzalaNHbBNx1p38c
-
-#### LOGIN A USER
-POST  http://localhost:5000/api/register
+#### SEND REQUEST TO UPDATE A PROFILE
+PATCH  http://localhost:8080/api/user/profile
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjQsImlhdCI6MTc1MDcxNDk1MSwiZXhwIjoxNzUwODAxMzUxfQ.COdsH-o63FezxYWU8N31qn6f9MnGAQk87HxjHx02LEU
 Content-Type: application/json
 
 {
-  "username": "ayonz",
-  "email": "ayomidesherif2019@gmail.com",
-  "password": "Testing26377#!@"
+  "username": "ayonz"
+}
+
+
+#### LOGIN A USER
+POST http://localhost:8080/api/login
+Content-Type: application/json
+
+{
+  "username": "aggeloskwn",
+  "password": "http://localhost:8080/auth" 
 }
 
 #### FETCH LEADERBOARD

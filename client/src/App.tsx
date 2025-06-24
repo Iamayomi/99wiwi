@@ -34,11 +34,12 @@ import HowToBetPage from "./pages/howToBet";
 import ContactUsPage from "./pages/contact-us";
 import Footer from "./components/HeroPage/Footer";
 import ProfilePage from "./pages/profilePage";
+import SettingPage from "./pages/setting";
 
 function Router() {
   return (
     <Switch>
-      <ConditionalRoute path="/" loggedInComponent={DashboardPage} loggedOutComponent={Home} />
+      <ProtectedRoute path="/" component={DashboardPage} />
       <ProtectedRoute path="/slots" component={SlotsPage} />
       <ProtectedRoute path="/dice" component={DicePage} />
       <ProtectedRoute path="/crash" component={CrashPage} />
@@ -52,6 +53,9 @@ function Router() {
       <ProtectedRoute path="/support" component={SupportPage} />
       <ProtectedRoute path="/admin" component={AdminPage} />
       <ProtectedRoute path="/profile" component={ProfilePage} />
+      <ProtectedRoute path="/settings" component={SettingPage} />
+
+      <Route path="/home" component={Home} />
       <Route path="/auth" component={AuthPage} />
       <Route path="/leaderboard" component={Leaderboard} />
       <Route path="/forgot-password" component={ForgotPasswordPage} />
