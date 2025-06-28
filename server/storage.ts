@@ -44,9 +44,8 @@ import {
   branding,
 } from "@shared/schema";
 import { db } from "./db";
+import { hashPassword } from "./auth";
 import { eq, desc, asc, sql, like, and, or, isNull } from "drizzle-orm";
-import { AnyBuyerError } from "@stripe/stripe-js";
-import { User2Icon } from "lucide-react";
 
 // modify the interface with any CRUD methods
 // you might need
@@ -62,7 +61,7 @@ export interface IStorage {
   updateLoginStreak(userId: number, streak: number): Promise<User>;
   checkDailyRewardStatus(userId: number): Promise<boolean>;
   updateUserPassword(userId: number, newPassword: string): Promise<User>;
-  updateUser(userId: number, updates: { email?: string; username?: string }): Promise<User>;
+  updateUser(userId: number, updates: { email?: string; username?: string; password?: string }): Promise<User>;
 
   // Analytics operations
   getActiveUsersCount(startDate: Date, endDate: Date): Promise<number>;
@@ -105,8 +104,8 @@ export interface IStorage {
 
   // Payment operations
   createPayment(payment: InsertPayment): Promise<Payment>;
-  getUserPayments(userId: number, limit?: number): Promise<Payment[]>;
-  getPaymentBySessionId(sessionId: string): Promise<Payment | undefined>;
+  getUserPayments(userId: number, page?: number, limit?: number): Promise<Payment[]>;
+  // getPaymentBySessionId(sessionId: string): Promise<Payment | undefined>;
   updatePaymentStatus(id: number, status: string): Promise<Payment>;
 
   // Announcement operations
@@ -234,7 +233,7 @@ export class DatabaseStorage implements IStorage {
     return updatedUser;
   }
 
-  async updateUser(userId: number, updates: { email?: string; username?: string }): Promise<User> {
+  async updateUser(userId: number, updates: { email?: string; username?: string; password?: string }): Promise<User> {
     console.log(`Updating user details for user ID ${userId}`);
 
     // First verify the user exists
@@ -256,6 +255,9 @@ export class DatabaseStorage implements IStorage {
     const updateData: Partial<User> = {};
     if (updates.email) updateData.email = updates.email;
     if (updates.username) updateData.username = updates.username;
+    if (updates.password) {
+      updateData.password = await hashPassword(updates.password);
+    }
 
     if (Object.keys(updateData).length === 0) {
       console.error(`Error updating user: No valid updates provided for ID ${userId}`);
@@ -526,14 +528,14 @@ export class DatabaseStorage implements IStorage {
     return newPayment;
   }
 
-  async getUserPayments(userId: number, limit = 10): Promise<Payment[]> {
-    const userPayments = await db.select().from(payments).where(eq(payments.userId, userId)).orderBy(desc(payments.createdAt)).limit(limit);
-
+  async getUserPayments(userId: number, limit = 10, page = 1): Promise<Payment[]> {
+    const offset = (page - 1) * limit;
+    const userPayments = await db.select().from(payments).where(eq(payments.userId, userId)).orderBy(desc(payments.createdAt)).limit(limit).offset(offset);
     return userPayments;
   }
 
-  async getPaymentBySessionId(sessionId: string): Promise<Payment | undefined> {
-    const [payment] = await db.select().from(payments).where(eq(payments.stripeSessionId, sessionId));
+  async getPaymentByOrderId(orderId: string): Promise<Payment | undefined> {
+    const [payment] = await db.select().from(payments).where(eq(payments.orderId, orderId));
 
     return payment;
   }
@@ -863,8 +865,8 @@ export class DatabaseStorage implements IStorage {
     if (!brandingData) {
       brandingData = {
         name: "99wiwi",
-        color: "#03346E", // Example default color
-        logo: "/images/logo.png", // Example default logo
+        colorUrl: "#03346E", // Example default color
+        logoUrl: "/images/logo.png", // Example default logo
         favicon: "/images/favicon.ico", // Example default favicon
         font: {
           family: "Arial, sans-serif", // Default font family

@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, decimal, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, varchar, timestamp, decimal, jsonb } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -53,7 +53,8 @@ export const payments = pgTable("payments", {
   userId: integer("user_id").notNull(),
   amount: decimal("amount", { precision: 10, scale: 2 }).notNull(), // Amount in USD
   coins: decimal("coins", { precision: 10, scale: 2 }).notNull(), // Number of coins purchased
-  stripeSessionId: text("stripe_session_id").notNull(),
+  paymentId: text("payment_id"),
+  orderId: text("order_id").notNull(),
   status: text("status").notNull().default("pending"), // pending, completed, failed, refunded
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
@@ -97,8 +98,8 @@ export const branding = pgTable("branding", {
   id: serial("id").primaryKey(),
   name: text("name").default("99wiwi"),
   color: text("color").default("#03346E"),
-  logo: text("logo").default("/images/logo.png"),
-  favicon: text("favicon").default("/images/favicon"),
+  logoUrl: text("logo_url").default("/images/logo.png"),
+  faviconUrl: text("favicon_url").default("/images/favicon"),
   font: jsonb("font").default({ family: "sans-serif", size: "16px" }),
   language: text("language").default("en-US"),
   timezone: text("timezone").default("UTC"),
@@ -206,6 +207,7 @@ export const adminBanAppealResponseSchema = z.object({
 export const updateUserSchema = z.object({
   email: z.string().optional(),
   username: z.string().optional(),
+  password: z.string().optional(),
 });
 
 export const adminCoinAdjustmentSchema = z.object({
@@ -265,6 +267,9 @@ export const coinPackageSchema = z.object({
 // Schema for creating a payment intent
 export const createPaymentIntentSchema = z.object({
   packageId: z.string(),
+  success_url: z.string(),
+  cancel_url: z.string(),
+  // payCurreny: z.string().default("usd"),
 });
 
 // Schema for subscription plans

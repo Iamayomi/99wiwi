@@ -1,4 +1,6 @@
 import { Express, Request, Response } from "express";
+import multer from "multer";
+import path from "path";
 import { storage } from "./storage";
 import { authMiddleware, adminMiddleware, ownerMiddleware, hashPassword } from "./auth";
 import {
@@ -14,6 +16,13 @@ import {
 } from "@shared/schema";
 import { z } from "zod";
 import { getBettingOverview } from "./games";
+
+const fileStorage = multer.diskStorage({
+  destination: "./uploads",
+  filename: (req, file, cb) => cb(null, Date.now() + "-" + file.originalname),
+});
+
+const upload = multer({ storage: fileStorage });
 
 /**
  * Password reset schema for admin
@@ -131,21 +140,41 @@ export function setupAdminRoutes(app: Express) {
     }
   });
 
-  app.put("/api/admin/branding", async (req: Request, res: Response) => {
-    try {
-      const updates = req.body;
-      const branding = await storage.updateBranding(updates);
+  app.put(
+    "/api/admin/branding",
+    upload.fields([
+      { name: "logo", maxCount: 1 },
+      { name: "favicon", maxCount: 1 },
+    ]),
+    async (req: Request, res: Response) => {
+      try {
+        const updates = req.body;
 
-      res.status(200).json({
-        message: "Branding details updated successfully",
-        branding,
-      });
-    } catch (error) {
-      console.error("Error updating branding details:", error);
+        const files = req.files as {
+          logo?: Express.Multer.File[] | undefined;
+          favicon?: Express.Multer.File[] | undefined;
+        };
 
-      res.status(500).json({ message: "Server error" });
+        const logoFile = files["logo"]?.[0];
+        const faviconFile = files["favicon"]?.[0];
+
+        const logoUrl = logoFile ? logoFile.filename : undefined;
+
+        const faviconUrl = faviconFile ? faviconFile.filename : undefined;
+
+        const branding = await storage.updateBranding({ ...updates, logoUrl, faviconUrl });
+
+        res.status(200).json({
+          message: "Branding details updated successfully",
+          branding,
+        });
+      } catch (error) {
+        console.error("Error updating branding details:", error);
+
+        res.status(500).json({ message: "Server error" });
+      }
     }
-  });
+  );
 
   // === USER MANAGEMENT ENDPOINTS ===
 

@@ -2,6 +2,8 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import type { Express, Request, Response } from "express";
+import axios from "axios";
+import crypto from "crypto";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, authMiddleware, banStatusMiddleware } from "./auth";
@@ -57,6 +59,52 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2025-02-24.acacia",
 });
 
+async function processSuccessfulPayment(paymentId: string, userId = null) {
+  try {
+    // Get payment record from database
+    const paymentRecord = await storage.getPaymentByOrderId(paymentId);
+
+    if (!paymentRecord) {
+      throw new Error("Payment record not found");
+    }
+
+    // Prevent double processing
+    if (paymentRecord.status === "completed") {
+      console.log("Payment already processed:", paymentId);
+      return;
+    }
+
+    // Add coins to user's balance
+    // await storage.addCoinsToUser(paymentRecord.userId, paymentRecord.coins);
+    const userId = paymentRecord.userId;
+    const coins = parseInt(paymentRecord.coins);
+    const user = await storage.getUser(userId);
+
+    if (user) {
+      const currentBalance = parseFloat(user.balance.toString());
+      const newBalance = currentBalance + coins;
+
+      await Promise.all([
+        storage.updateUserBalance(userId, newBalance),
+        storage.createCoinTransaction({
+          userId,
+          amount: coins.toString(),
+          reason: `Purchased ${coins} coins via NOWPayments`,
+          adminId: 0,
+        }),
+      ]);
+    }
+
+    // Update payment status
+    await storage.updatePaymentStatus(paymentId, "completed");
+
+    console.log(`Successfully processed payment ${paymentId}: ${paymentRecord.coins} coins added to user ${paymentRecord.userId}`);
+  } catch (error) {
+    console.error("Error processing successful payment:", error);
+    throw error;
+  }
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Set up authentication routes
   setupAuth(app);
@@ -103,116 +151,185 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(coinPackages);
   });
 
-  app.post("/api/coins/create-payment-intent", authMiddleware, async (req: Request, res: Response) => {
-    try {
-      const { packageId } = createPaymentIntentSchema.parse(req.body);
+  // Constant
+  const NOWPAYMENTS_API_KEY = process.env.NOWPAYMENTS_API_KEY! as String;
+  const NOWPAYMENTS_IPN_SECRET = process.env.NOWPAYMENTS_IPN_SECRET! as String;
+  const NOWPAYMENTS_API_URL = process.env.NOWPAYMENTS_API_URL! as String;
+  const SERVER_URL = process.env.SERVER_URL as String;
 
-      // Find the selected package
+  // API Route: Create Payment Intent
+  app.post("/api/wallets/create-payment-intent", authMiddleware, async (req: Request, res: Response) => {
+    try {
+      // Validate request body
+      // const { packageId, success_url, cancel_url } = createPaymentIntentSchema.parse(req.body);
+      const { packageId, success_url, cancel_url } = req.body;
+
+      // Find package
       const selectedPackage = coinPackages.find((pkg) => pkg.id === packageId);
       if (!selectedPackage) {
         return res.status(400).json({ error: "Invalid package ID" });
       }
 
-      // Calculate amount in cents for Stripe
-      const amount = Math.round(selectedPackage.price * 100);
+      // Create NOWPayments payment
+      const orderId = `order_${Date.now()}_${req.user!.id}`;
 
-      // Create a payment intent with Stripe
-      const paymentIntent = await stripe.paymentIntents.create({
-        amount,
-        currency: "usd",
-        metadata: {
-          userId: req.user!.id.toString(),
-          packageId,
-          coins: selectedPackage.coins.toString(),
+      // Create payment with NowPayments
+      const paymentData = {
+        price_amount: selectedPackage.price,
+        price_currency: "usd",
+        pay_currency: "btc", // You can make this dynamic based on user selection
+        ipn_callback_url: `${NOWPAYMENTS_API_URL}/api/coins/webhook`,
+        order_id: orderId,
+        order_description: `${selectedPackage.name} - ${selectedPackage.coins} coins`,
+        success_url,
+        cancel_url,
+        // Custom data to identify the user and package
+        customer_email: req.user?.email,
+        // case: "checkout", // Use checkout flow for redirect
+      };
+
+      const response = await axios.post(`${NOWPAYMENTS_API_URL}/invoice`, paymentData, {
+        headers: {
+          "x-api-key": NOWPAYMENTS_API_KEY,
+          "Content-Type": "application/json",
         },
       });
+      console.log(response.data);
 
-      // Create a record in our database
+      const { id, order_id, invoice_url } = response.data;
+
+      // Store payment in database
       await storage.createPayment({
         userId: req.user!.id,
         amount: selectedPackage.price.toString(),
         coins: selectedPackage.coins.toString(),
-        stripeSessionId: paymentIntent.id,
+        orderId,
         status: "pending",
       });
 
-      // Return the client secret to the client
       res.json({
-        clientSecret: paymentIntent.client_secret,
-        packageDetails: selectedPackage,
+        paymentUrl: invoice_url,
+        paymentId: parseInt(id),
+        orderId: order_id,
       });
     } catch (error: any) {
       console.error("Error creating payment intent:", error);
-      res.status(400).json({
-        error: error.message || "Failed to create payment",
+
+      res.status(500).json({
+        message: "Failed to create payment",
+        error: error.response?.data || error.message,
       });
     }
   });
 
-  // Webhook for Stripe events
-  app.post("/api/coins/webhook", async (req: Request, res: Response) => {
-    const sig = req.headers["stripe-signature"];
-
-    let event;
-
+  // Webhook endpoint for NowPayments IPN notifications
+  app.post("/api/coins/webhook", async (req, res) => {
     try {
-      // Verify the event came from Stripe
-      // In production, you should set up your webhook secret
-      if (!sig) {
-        return res.status(400).json({ error: "Missing Stripe signature" });
+      const receivedSignature = req.headers["x-nowpayments-sig"];
+      const requestBody = JSON.stringify(req.body);
+
+      // Verify webhook signature
+      const expectedSignature = crypto.createHmac("sha512", NOWPAYMENTS_IPN_SECRET).update(requestBody).digest("hex");
+
+      if (receivedSignature !== expectedSignature) {
+        console.error("Invalid webhook signature");
+        return res.status(401).json({ message: "Invalid signature" });
       }
 
-      // Process the event
-      event = req.body;
+      const { payment_status, payment_id, order_id } = req.body;
 
-      if (event.type === "payment_intent.succeeded") {
-        const paymentIntent = event.data.object;
+      console.log("Webhook received:", { payment_status, payment_id, order_id });
 
-        // Get our payment from the database
-        const payment = await storage.getPaymentBySessionId(paymentIntent.id);
+      // Handle different payment statuses
+      switch (payment_status) {
+        case "finished":
+        case "confirmed":
+          await processSuccessfulPayment(payment_id);
+          break;
 
-        if (payment) {
-          // Update payment status
-          await storage.updatePaymentStatus(payment.id, "completed");
+        case "failed":
+        case "expired":
+          await storage.updatePaymentStatus(payment_id, "failed");
+          break;
 
-          // Add coins to user's balance
-          const userId = parseInt(paymentIntent.metadata.userId);
-          const coins = parseInt(paymentIntent.metadata.coins);
-          const user = await storage.getUser(userId);
+        case "partially_paid":
+          await storage.updatePaymentStatus(payment_id, "partially_paid");
+          break;
 
-          if (user) {
-            const currentBalance = parseFloat(user.balance.toString());
-            const newBalance = currentBalance + coins;
+        default:
+          await storage.updatePaymentStatus(payment_id, payment_status);
+      }
 
-            // Update user balance
-            await storage.updateUserBalance(userId, newBalance);
+      res.status(200).json({ status: "ok" });
+    } catch (error) {
+      console.error("Webhook processing error:", error);
+      res.status(500).json({ message: "Webhook processing failed" });
+    }
+  });
 
-            // Create coin transaction record (adminId 0 means system)
-            await storage.createCoinTransaction({
-              userId,
-              amount: coins.toString(),
-              reason: `Purchased ${coins} coins`,
-              adminId: 0,
-            });
+  // Get payment status endpoint (optional - for manual checking)
+  app.get("/api/wallets/payment-status/:paymentId", async (req, res) => {
+    try {
+      const { paymentId } = req.params;
+      const userId = req.user?.id;
+
+      if (!userId) {
+        return res.status(401).json({ error: "User not authenticated" });
+      }
+
+      // Get payment from database
+      const payment = await storage.getPaymentByOrderId(paymentId);
+
+      if (!payment || payment.userId !== userId) {
+        return res.status(404).json({ error: "Payment not found" });
+      }
+
+      // Get latest status from NowPayments if still pending
+      if (payment.status === "waiting" || payment.status === "confirming") {
+        try {
+          const response = await axios.get(`${NOWPAYMENTS_API_URL}/payment/${paymentId}`, {
+            headers: { "x-api-key": NOWPAYMENTS_API_KEY },
+          });
+
+          const latestStatus = response.data.payment_status;
+          if (latestStatus !== payment.status) {
+            await storage.updatePaymentStatus(payment.id, latestStatus);
+            payment.status = latestStatus;
           }
+        } catch (error) {
+          console.error("Error fetching payment status from NowPayments:", error);
         }
       }
 
-      // Return a 200 response to acknowledge receipt of the event
-      res.json({ received: true });
-    } catch (err: any) {
-      console.error("Error handling webhook:", err.message);
-      res.status(400).send(`Webhook Error: ${err.message}`);
+      res.json({
+        paymentId: payment.paymentId,
+        status: payment.status,
+        amount: payment.amount,
+        coins: payment.coins,
+        createdAt: payment.createdAt,
+      });
+    } catch (error) {
+      console.error("Payment status check error:", error);
+      res.status(500).json({ error: "Failed to check payment status" });
     }
   });
 
   // Payment history
   app.get("/api/coins/purchases", authMiddleware, async (req: Request, res: Response) => {
     try {
-      const payments = await storage.getUserPayments(req.user!.id);
-      res.json(payments);
+      const userId = parseInt(req.query.userId as string);
+      const limit = parseInt(req.query.limit as string) || 10;
+      const page = parseInt(req.query.page as string) || 1;
+
+      const userPayments = await storage.getUserPayments(userId, limit, page);
+      res.json({ payments: userPayments });
     } catch (error: any) {
-      res.status(500).json({ error: error.message });
+      console.error("Error fetching payments:", error);
+
+      res.status(500).json({
+        message: "Failed to fetch payments",
+        error: error.message,
+      });
     }
   });
 

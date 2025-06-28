@@ -17,7 +17,7 @@ import BlackjackPage from "@/pages/blackjack-page";
 import PlinkoPage from "@/pages/plinko-page";
 import AdminPage from "@/pages/admin-page";
 import HistoryPage from "@/pages/history-page";
-import PurchasePage from "@/pages/purchase-page";
+// import PurchasePage from "@/pages/purchase-page";
 import RewardsPage from "@/pages/rewards-page";
 import SubscriptionPage from "@/pages/subscription-page";
 import SupportPage from "@/pages/support-page";
@@ -35,6 +35,7 @@ import ContactUsPage from "./pages/contact-us";
 import Footer from "./components/HeroPage/Footer";
 import ProfilePage from "./pages/profilePage";
 import SettingPage from "./pages/setting";
+import PurchasePage from "./pages/purchase-page";
 
 function Router() {
   return (
@@ -48,6 +49,7 @@ function Router() {
       <ProtectedRoute path="/plinko" component={PlinkoPage} />
       <ProtectedRoute path="/history" component={HistoryPage} />
       <ProtectedRoute path="/purchase" component={PurchasePage} />
+
       <ProtectedRoute path="/rewards" component={RewardsPage} />
       <ProtectedRoute path="/subscriptions" component={SubscriptionPage} />
       <ProtectedRoute path="/support" component={SupportPage} />
@@ -66,7 +68,7 @@ function Router() {
       <Route path="/cookie-policy" component={CookiePolicyPage} />
       <Route path="/howToBet" component={HowToBetPage} />
       <Route path="/contact-us" component={ContactUsPage} />
-      <Route component={NotFound} />
+      {/* <Route component={NotFound} /> */}
     </Switch>
   );
 }

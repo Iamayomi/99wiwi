@@ -118,7 +118,7 @@ const GamingUI = () => {
   // Filter games by category & search text
   const filteredGames =
     games.length > 0
-      ? games.filter((game) => {
+      ? games.filter((game: any) => {
           // Filter by category unless 'All Games' selected
           if (selectedCategory !== "All Games" && game.category !== selectedCategory) return false;
           // Filter by search (case insensitive)
@@ -132,86 +132,97 @@ const GamingUI = () => {
   const featuredGamesToShow = games.length > 0 ? filteredGames : featuredGames;
 
   // Helper for building path with query string if slug present
-  const buildPath = (game) => (game.slug ? `/${game.slug}?id=${game._id}` : game.path || `/${game.name?.toLowerCase().replace(/\s+/g, "_")}`);
+  // const buildPath = (game) => (game.slug ? `/${game.slug}?id=${game._id}` : game.path || `/${game.name?.toLowerCase().replace(/\s+/g, "_")}`);
 
   return (
-    <>
-      <div className="text-white px-4 md:px-8">
-        {/* Top Banner Cards */}
-        <div className="flex overflow-x-auto gap-4 mb-6">
-          <Card color="bg-primary text-white" img={IMAGES.welcome2} text="Real-Time Live Games" />
-          <Card color="bg-purple-500 text-white" img={IMAGES.treasure} text="Instant Payouts" />
-          <Card color="bg-green-500 text-white" img={IMAGES.welcomebonus} text="Gaming Community Vibes" />
-        </div>
-
-        {/* Search + Sort */}
-        <div className="flex items-center gap-4 mb-6">
-          <input
-            type="text"
-            placeholder="Search for games"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="bg-gray-800 p-3 rounded-lg w-full text-white placeholder:text-gray-400"
-          />
-          <button
-            className="bg-gray-700 px-4 py-2 rounded-lg"
-            onClick={() => {
-              // For now just reset search (you can add real sort logic here)
-              setSearch("");
-            }}>
-            Sort
-          </button>
-        </div>
-
-        {/* Live Games */}
-        <div className="uppercase mb-2">Live Casino Games</div>
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-2 mb-6">
-          {liveGamesToShow.map((game) => (
-            <a
-              key={game.name}
-              href={`/${game.name.toLowerCase().replace(/\s+/g, "_")}`}
-              onClick={(e) => {
-                e.preventDefault();
-                alert("please login");
-              }}>
-              <GameCard {...game} />
-            </a>
-          ))}
-        </div>
-
-        {/* Featured or Fetched Games */}
-        <div className="uppercase mb-2">{selectedCategory}</div>
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-2 mb-6">
-          {featuredGamesToShow.map((game) => (
-            <a
-              key={game.name}
-              href={`/${game.name.toLowerCase().replace(/\s+/g, "_")}`}
-              onClick={(e) => {
-                e.preventDefault();
-                alert("please login");
-              }}>
-              <GameCard {...game} />
-            </a>
-          ))}
-        </div>
-
-        {/* Other Games */}
-        <div className="uppercase mb-2 text-white">Other Games</div>
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-2 mb-6">
-          {otherGames.map((game) => (
-            <a
-              key={game.name}
-              href={`/${game.name.toLowerCase().replace(/\s+/g, "_")}`}
-              onClick={(e) => {
-                e.preventDefault();
-                alert("please login");
-              }}>
-              <GameCard {...game} />
-            </a>
-          ))}
-        </div>
+    <div className="text-white px-4 md:px-8">
+      {/* Top Banner Cards */}
+      <div className="flex overflow-x-auto gap-4 mb-6">
+        <Card color="bg-primary text-white" img={IMAGES.welcome2} text="Real-Time Live Games" />
+        <Card color="bg-purple-500 text-white" img={IMAGES.treasure} text="Instant Payouts" />
+        <Card color="bg-green-500 text-white" img={IMAGES.welcomebonus} text="Gaming Community Vibes" />
       </div>
-    </>
+
+      {/* Search + Sort */}
+      <div className="flex items-center gap-4 mb-6">
+        <input
+          type="text"
+          placeholder="Search for games"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="bg-gray-800 p-3 rounded-lg w-full text-white placeholder:text-gray-400"
+        />
+        <button
+          className="bg-gray-700 px-4 py-2 rounded-lg"
+          onClick={() => {
+            // For now just reset search (you can add real sort logic here)
+            setSearch("");
+          }}>
+          Sort
+        </button>
+      </div>
+
+      {/* Live Games */}
+      <div className="uppercase mb-2">Live Casino Games</div>
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-2 mb-6">
+        {otherGames.map((game) => (
+          <a
+            key={game.name}
+            href={`/${game.name.toLowerCase().replace(/\s+/g, "_")}`}
+            onClick={(e) => {
+              e.preventDefault();
+              alert("please login");
+            }}>
+            <GameCard {...game} />
+          </a>
+        ))}
+      </div>
+
+      {/* Featured or Fetched Games */}
+      <div className="uppercase mb-2">{selectedCategory}</div>
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-2 mb-6">
+        {otherGames.map((game) => (
+          <a
+            key={game.name}
+            href={`/${game.name.toLowerCase().replace(/\s+/g, "_")}`}
+            onClick={(e) => {
+              e.preventDefault();
+              alert("please login");
+            }}>
+            <GameCard {...game} />
+          </a>
+        ))}
+      </div>
+
+      {/* <div className="grid grid-cols-2 md:grid-cols-5 gap-2 mb-6">
+        {featuredGamesToShow.map((game) => (
+          <FeaturedCard
+            key={game._id || game.name}
+            path={buildPath(game)}
+            name={game.gameName || game.name}
+            img={game.image || game.img}
+            color={game.color}
+            onClick={() => setLocation(buildPath(game))}
+          />
+        ))}
+      </div> */}
+
+      {/* Other Games */}
+      <div className="uppercase mb-2 text-white">Other Games</div>
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-2 mb-6">
+        {otherGames.map((game) => (
+          <a
+            key={game.name}
+            href={`/${game.name.toLowerCase().replace(/\s+/g, "_")}`}
+            onClick={(e) => {
+              e.preventDefault();
+              alert("please login");
+            }}>
+            <GameCard {...game} />
+          </a>
+        ))}
+      </div>
+    </div>
   );
 };
 

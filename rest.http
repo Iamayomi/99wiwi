@@ -4,7 +4,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjQsImlhd
 Content-Type: application/json
 
 {
-  "username": "ayonz"
+  "username": "miller"
 }
 
 
@@ -29,10 +29,22 @@ Content-Type: application/json
 GET http://localhost:8080/api/admin/branding
 Content-Type: application/json
 
+#### PAYMENT WEBHOOK
+POST https://9d85-105-119-22-55.ngrok-free.app/api/coins/webhook
+Content-Type: application/json
+x-nowpayments-sig: 
+
+{
+  "payment_id": "4456044098",
+  "payment_status": "waiting"
+}
+
+
 
 #### UPDATE BRANDING
 PUT http://localhost:8080/api/admin/branding
-Content-Type: application/json
+# Content-Type: application/json
+Content-Type: image/png
 
 {
    "name": "99w3w3",
