@@ -96,7 +96,7 @@ async function processSuccessfulPayment(paymentId: string, userId = null) {
     }
 
     // Update payment status
-    await storage.updatePaymentStatus(paymentId, "completed");
+    await storage.updatePaymentStatus(parseInt(paymentId), "completed");
 
     console.log(`Successfully processed payment ${paymentId}: ${paymentRecord.coins} coins added to user ${paymentRecord.userId}`);
   } catch (error) {
@@ -155,7 +155,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const NOWPAYMENTS_API_KEY = process.env.NOWPAYMENTS_API_KEY! as String;
   const NOWPAYMENTS_IPN_SECRET = process.env.NOWPAYMENTS_IPN_SECRET! as String;
   const NOWPAYMENTS_API_URL = process.env.NOWPAYMENTS_API_URL! as String;
-  const SERVER_URL = process.env.SERVER_URL as String;
 
   // API Route: Create Payment Intent
   app.post("/api/wallets/create-payment-intent", authMiddleware, async (req: Request, res: Response) => {
@@ -194,7 +193,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           "Content-Type": "application/json",
         },
       });
-      console.log(response.data);
 
       const { id, order_id, invoice_url } = response.data;
 

@@ -44,7 +44,7 @@ x-nowpayments-sig:
 #### UPDATE BRANDING
 PUT http://localhost:8080/api/admin/branding
 # Content-Type: application/json
-Content-Type: image/png
+# Content-Type: image/png
 
 {
    "name": "99w3w3",

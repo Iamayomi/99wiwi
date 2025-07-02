@@ -2973,7 +2973,7 @@ const getBrandingDetails = async () => ({
 });
 
 const updateBrandingDetails = async (updates: any) => ({
-  branding: { ...(await getBrandingDetails()), ...updates },
+  branding: { ...updates },
 });
 
 type BrandingData = {
@@ -3027,7 +3027,7 @@ function BrandingTab() {
     queryKey: ["/api/admin/branding"],
     queryFn: async () => {
       const res = await getBrandingDetails();
-      return res;
+      return await res;
     },
   });
 
@@ -3057,8 +3057,10 @@ function BrandingTab() {
   // Update branding data
   const updateBranding = useMutation({
     mutationFn: async (updatedData: BrandingData) => {
-      const res = await updateBrandingDetails(updatedData);
-      return res.branding;
+      const res = await apiRequest("PUT", "/api/admin/branding", updatedData);
+      console.log(res);
+
+      return await res.json();
     },
     onSuccess: () => {
       toast({
@@ -3099,9 +3101,12 @@ function BrandingTab() {
 
   const handleImageUpload = async (e: any, field: any) => {
     const file = e.target.files?.[0];
+
     if (!file) return;
     try {
       const imageUrl = await compressImageUpload(file, 2048);
+      // console.log(imageUrl);
+
       setBrandingData((prev) => ({ ...prev, [field]: imageUrl }));
       toast({ description: "Image uploaded successfully" });
     } catch (error) {
@@ -3169,7 +3174,7 @@ function BrandingTab() {
               <Input id="logoUrl" type="text" name="logoUrl" value={brandingData.logoUrl} onChange={handleChange} placeholder="Enter logo URL" />
               <label htmlFor="logo-upload" className="absolute top-1/2 right-2 -translate-y-1/2 px-3 py-1 bg-primary  text-white text-xs rounded-full cursor-pointer hover:bg-primary/90 ">
                 Upload
-                <input id="logo-upload" type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e, "logoUrl")} />
+                <input id="logo-upload" type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e, "logo")} />
               </label>
             </div>
           </div>

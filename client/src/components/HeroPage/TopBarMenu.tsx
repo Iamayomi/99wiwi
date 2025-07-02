@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { FaChevronDown } from "react-icons/fa";
 import { Link } from "wouter";
-import { getQueryFn } from "@/lib/queryClient";
+import { apiRequest, getQueryFn } from "@/lib/queryClient";
 import { useQuery } from "@tanstack/react-query";
 import { Branding } from "@shared/schema";
+import { get } from "http";
 
 // Real-time clock
 const Clock: React.FC = () => {
@@ -33,10 +34,24 @@ declare global {
 }
 
 const TopBarMenu: React.FC = () => {
-  const { data: branding } = useQuery<Branding>({
+  // const { data: branding } = useQuery<Branding>({
+  //   queryKey: ["/api/admin/branding"],
+  //   queryFn: getQueryFn({ on401: "throw" }),
+  //   refetchOnWindowFocus: true,
+  // });
+
+  // Fetch branding data
+  const {
+    data: branding,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: ["/api/admin/branding"],
-    queryFn: getQueryFn({ on401: "throw" }),
-    refetchOnWindowFocus: true,
+    queryFn: async () => {
+      const res = await apiRequest("GET", "/api/admin/branding");
+      return await res.json();
+    },
   });
 
   const languages = [
@@ -97,6 +112,8 @@ const TopBarMenu: React.FC = () => {
     setShowLangs(false);
   };
 
+  const icon: string = `${branding?.faviconUrl}`;
+
   return (
     <>
       <div className="bg-[#212121] z-[100] relative">
@@ -104,7 +121,7 @@ const TopBarMenu: React.FC = () => {
           {/* Logo */}
           <div className="flex items-center">
             <Link to="/" className="flex-shrink-0">
-              <img className="w-24 xl:w-28" src={`http://localhost:8080/uploads/${branding?.faviconUrl ?? "default-logo.png"}`} alt="Logo" />
+              <img className="w-24 xl:w-28" src={`${branding?.faviconUrl}`} alt="Logo" />
             </Link>
           </div>
 

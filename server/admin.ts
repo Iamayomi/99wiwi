@@ -19,10 +19,12 @@ import { getBettingOverview } from "./games";
 
 const fileStorage = multer.diskStorage({
   destination: "./uploads",
-  filename: (req, file, cb) => cb(null, Date.now() + "-" + file.originalname),
+  filename: (_, file, cb) => cb(null, Date.now() + "-" + file.originalname),
 });
 
-const upload = multer({ storage: fileStorage });
+const upload = multer({
+  storage: fileStorage,
+});
 
 /**
  * Password reset schema for admin
@@ -121,7 +123,7 @@ export function setupAdminRoutes(app: Express) {
   app.get("/api/admin/betoverview", authMiddleware, adminMiddleware, getBettingOverview);
 
   // Branding Endpoints
-  app.get("/api/admin/branding", authMiddleware, adminMiddleware, async (req: Request, res: Response) => {
+  app.get("/api/admin/branding", async (req: Request, res: Response) => {
     try {
       const branding = await storage.getBranding();
       // Exclude sensitive details (e.g., admin account information)
@@ -157,6 +159,14 @@ export function setupAdminRoutes(app: Express) {
 
         const logoFile = files["logo"]?.[0];
         const faviconFile = files["favicon"]?.[0];
+
+        const allowedTypes = ["image/png", "image/jpeg"];
+        if (logoFile && !allowedTypes.includes(logoFile.mimetype)) {
+          return res.status(400).json({ message: "Invalid logo file type" });
+        }
+        if (faviconFile && !allowedTypes.includes(faviconFile.mimetype)) {
+          return res.status(400).json({ message: "Invalid favicon file type" });
+        }
 
         const logoUrl = logoFile ? logoFile.filename : undefined;
 

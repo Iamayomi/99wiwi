@@ -7,8 +7,7 @@ import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import CoinPackages from "@/components/coin-packages";
-// import Checkout from "@/components/checkout";
-import Checkout from "@/components/checkout.nowpayment";
+import Checkout from "@/components/checkout";
 
 import { useLocation } from "wouter";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
