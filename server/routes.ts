@@ -183,7 +183,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         order_description: `${selectedPackage.name} - ${selectedPackage.coins} coins`,
         success_url,
         cancel_url,
-        // Custom data to identify the user and package
+
         customer_email: req.user?.email,
         // case: "checkout", // Use checkout flow for redirect
       };
