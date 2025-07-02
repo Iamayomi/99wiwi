@@ -53,7 +53,7 @@ export const payments = pgTable("payments", {
   userId: integer("user_id").notNull(),
   amount: decimal("amount", { precision: 10, scale: 2 }).notNull(), // Amount in USD
   coins: decimal("coins", { precision: 10, scale: 2 }).notNull(), // Number of coins purchased
-  paymentId: text("payment_id"),
+  paymentId: text("payment_id").notNull(),
   orderId: text("order_id").notNull(),
   status: text("status").notNull().default("pending"), // pending, completed, failed, refunded
   createdAt: timestamp("created_at").defaultNow().notNull(),

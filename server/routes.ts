@@ -96,7 +96,7 @@ async function processSuccessfulPayment(paymentId: string, userId = null) {
     }
 
     // Update payment status
-    await storage.updatePaymentStatus(paymentId, "completed");
+    await storage.updatePaymentStatus(parseInt(paymentId), "completed");
 
     console.log(`Successfully processed payment ${paymentId}: ${paymentRecord.coins} coins added to user ${paymentRecord.userId}`);
   } catch (error) {
@@ -203,13 +203,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userId: req.user!.id,
         amount: selectedPackage.price.toString(),
         coins: selectedPackage.coins.toString(),
+        paymentId: `${id}`, // Use NowPayments ID as paymentId
         orderId,
         status: "pending",
       });
 
       res.json({
         paymentUrl: invoice_url,
-        paymentId: parseInt(id),
+        paymentId: `${id}`,
         orderId: order_id,
       });
     } catch (error: any) {
